@@ -1,0 +1,34 @@
+import { MissionStatus } from '../../common/enums/mission-status.enum';
+import { VolumeEnum } from '../../common/enums/volume.enum';
+import { User } from '../../users/entities/user.entity';
+export declare class Mission {
+    id: string;
+    clientId: string;
+    client: User;
+    vendeurId: string | null;
+    vendeur: User | null;
+    moderateurId: string | null;
+    moderateur: User | null;
+    status: MissionStatus;
+    date: Date;
+    startTime: string;
+    durationHours: number;
+    address: string;
+    city: string;
+    category: string;
+    volume: VolumeEnum;
+    basePrice: number;
+    optionsPrice: number;
+    discount: number;
+    totalPrice: number;
+    stripePaymentId: string | null;
+    stripeCheckoutSessionId: string | null;
+    paidAt: Date | null;
+    refundAmount: number | null;
+    refundStripeId: string | null;
+    cancelledAt: Date | null;
+    cancellationReason: string | null;
+    completedAt: Date | null;
+    createdAt: Date;
+    updatedAt: Date;
+}

@@ -31,10 +31,11 @@ import { VendeursPublicModule } from './vendeurs-public/vendeurs-public.module';
           configService.get<string>('NODE_ENV') !== 'production' ||
           configService.get<string>('DB_SYNC') === 'true',
         logging: configService.get<string>('NODE_ENV') === 'development',
-        ssl:
-          configService.get<string>('NODE_ENV') === 'production'
-            ? { rejectUnauthorized: false }
-            : false,
+        // SSL uniquement si DB_SSL=true (pour bases managées : AWS RDS, Supabase...)
+        // Laisser à false pour un postgres Docker local
+        ssl: configService.get<string>('DB_SSL') === 'true'
+          ? { rejectUnauthorized: false }
+          : false,
       }),
       inject: [ConfigService],
     }),

@@ -182,6 +182,130 @@ cat backup_YYYYMMDD.sql | docker exec -i seliv_postgres psql -U seliv seliv_db
 
 ---
 
+---
+
+## 9. Migrations et Seed de la base de données
+
+### Méthode recommandée — Script automatique (premier déploiement)
+
+Le script `scripts/first-deploy.sh` fait **tout en une commande** :
+
+```bash
+chmod +x scripts/first-deploy.sh
+./scripts/first-deploy.sh
+```
+
+Il gère dans l'ordre :
+1. Build des images Docker
+2. Démarrage avec `DB_SYNC=true` → TypeORM crée toutes les tables automatiquement
+3. Seed : insertion des données initiales (comptes admin, vendeurs, etc.)
+4. Redémarrage en mode production normal (`DB_SYNC=false`)
+
+---
+
+### Méthode manuelle (si vous préférez contrôler chaque étape)
+
+**Étape 1 — Créer le schéma (première fois uniquement)**
+
+Ajouter temporairement dans `.env.prod` :
+```
+DB_SYNC=true
+```
+
+Démarrer les containers :
+```bash
+docker compose -f docker-compose.prod.yml --env-file .env.prod up -d
+```
+
+TypeORM crée automatiquement toutes les tables. Vérifier avec :
+```bash
+docker compose -f docker-compose.prod.yml logs backend | grep -E "query|synchronize|error"
+```
+
+**Étape 2 — Retirer DB_SYNC et redémarrer**
+
+Retirer `DB_SYNC=true` de `.env.prod`, puis :
+```bash
+docker compose -f docker-compose.prod.yml --env-file .env.prod restart backend
+```
+
+**Étape 3 — Seed (données initiales)**
+
+```bash
+docker exec seliv_backend node dist/seed
+# OU
+./scripts/seed-prod.sh
+```
+
+---
+
+### Pour les modifications d'entités (après le premier déploiement)
+
+Quand vous modifiez une entité TypeORM, générez une migration **depuis votre machine locale** :
+
+```bash
+cd backend
+
+# La DB postgres doit être accessible (docker compose up postgres)
+npm run migration:generate -- src/migrations/NomDuChangement
+
+# Vérifier le fichier généré, puis committer
+git add src/migrations/
+git commit -m "add: migration NomDuChangement"
+```
+
+Au prochain `./deploy.sh`, la migration est appliquée automatiquement au démarrage du container (via `start.prod.sh` → `node dist/migration-runner`).
+
+Autres commandes utiles :
+```bash
+npm run migration:show     # voir les migrations en attente
+npm run migration:revert   # annuler la dernière migration
+```
+
+---
+
+### Seed — Données initiales (première mise en production)
+
+Le seed crée les comptes de base (admin, moderateur) et les données de test.
+
+> ⚠️ **À n'exécuter qu'une seule fois** après le premier déploiement.
+> Le seed **efface toutes les données** existantes via TRUNCATE avant de réinsérer.
+
+```bash
+# Sur le VPS, après que le container backend est démarré
+docker exec seliv_backend node dist/seed
+```
+
+**Comptes créés par le seed :**
+
+| Email | Mot de passe | Rôle |
+|---|---|---|
+| `admin@seliv.fr` | `Admin1234!` | ADMIN |
+| `modo@seliv.fr` | `Modo1234!` | MODERATEUR |
+| `client1@seliv.fr` | `Client1234!` | CLIENT |
+| `client2@seliv.fr` | `Client1234!` | CLIENT |
+| `vendeur1@seliv.fr` | `Vendeur1234!` | VENDEUR (Pro ⭐) |
+| `vendeur2@seliv.fr` | `Vendeur1234!` | VENDEUR (Basic) |
+
+> En production réelle, **changer les mots de passe admin** immédiatement après.
+
+---
+
+### Checklist premier déploiement
+
+```
+[ ] 1. Générer la migration InitialSchema en local
+[ ] 2. Committer la migration dans Git
+[ ] 3. Pusher sur le VPS (git pull)
+[ ] 4. Lancer docker compose up --build
+[ ] 5. Vérifier les logs : migrations appliquées
+[ ] 6. Exécuter le seed UNE SEULE FOIS : docker exec seliv_backend node dist/seed
+[ ] 7. Tester la connexion admin sur https://VOTRE_DOMAINE
+[ ] 8. Changer le mot de passe admin
+```
+
+---
+
 ## Variables d'environnement importantes
 
 | Variable | Description | Exemple |

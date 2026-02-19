@@ -26,7 +26,10 @@ import { VendeursPublicModule } from './vendeurs-public/vendeurs-public.module';
         type: 'postgres',
         url: configService.get<string>('DATABASE_URL'),
         autoLoadEntities: true,
-        synchronize: configService.get<string>('NODE_ENV') !== 'production',
+        // En prod : synchronize=false sauf si DB_SYNC=true (premier déploiement uniquement)
+        synchronize:
+          configService.get<string>('NODE_ENV') !== 'production' ||
+          configService.get<string>('DB_SYNC') === 'true',
         logging: configService.get<string>('NODE_ENV') === 'development',
         ssl:
           configService.get<string>('NODE_ENV') === 'production'

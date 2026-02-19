@@ -1,0 +1,14 @@
+# Environnements
+.env
+.env.prod
+.env.local
+backend/.env
+
+# Certbot / SSL (générés sur le VPS)
+certbot/
+
+# Node
+node_modules/
+
+# Logs
+*.log

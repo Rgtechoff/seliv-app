@@ -21,6 +21,9 @@ RUN addgroup --system --gid 1001 nodejs && \
 COPY --from=deps /app/node_modules ./node_modules
 COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/package*.json ./
+# Script de démarrage : migrations → app
+COPY start.prod.sh ./start.prod.sh
+RUN chmod +x ./start.prod.sh
 USER nestjs
 EXPOSE 4000
-CMD ["dumb-init", "node", "dist/main"]
+CMD ["sh", "start.prod.sh"]

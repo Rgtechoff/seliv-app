@@ -1,0 +1,34 @@
+# Database
+# Remplacez UN_MOT_DE_PASSE_TRES_COMPLEXE par une vraie suite de lettres et de chiffres aléatoires
+DATABASE_URL=postgresql://seliv:UN_MOT_DE_PASSE_TRES_COMPLEXE@postgres:5432/seliv_db
+POSTGRES_USER=seliv
+POSTGRES_PASSWORD=RGtech@ra113
+POSTGRES_DB=seliv_db
+
+# Redis
+REDIS_URL=redis://redis:6379
+
+# JWT & Auth 
+JWT_SECRET=326a607fc4b572b5089df90c8857c1db315f6c6f93ce0cdcd42bd1bb5a52b6e0
+JWT_EXPIRES_IN=7d
+NEXTAUTH_SECRET=326a607fc4b572b5089df90c8857c1db
+NEXTAUTH_URL=https://seliv.fr
+
+# Stripe
+STRIPE_SECRET_KEY=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
+STRIPE_PUBLISHABLE_KEY=pk_live_votre_vraie_cle_publique_stripe
+STRIPE_WEBHOOK_SECRET=whsec_votre_vrai_secret_webhook
+NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=pk_live_votre_vraie_cle_publique_stripe
+
+# Resend (email)
+RESEND_API_KEY=re_votre_cle_resend
+RESEND_FROM_EMAIL=noreply@seliv.fr
+
+# App URLs & Environment (Crucial pour le VPS)
+FRONTEND_URL=https://seliv.fr
+BACKEND_URL=https://seliv.fr/api
+NODE_ENV=production
+
+# Next.js
+# Comme Nginx route /api/ vers le backend, voici la bonne URL publique :
+NEXT_PUBLIC_API_URL=https://seliv.fr/api/v1

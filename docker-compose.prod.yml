@@ -76,6 +76,7 @@ services:
       NEXTAUTH_SECRET: ${NEXTAUTH_SECRET}
       NEXTAUTH_URL: ${NEXTAUTH_URL}
       NODE_ENV: production
+      ACCESS_CODE: ${ACCESS_CODE:-}
     depends_on:
       - backend
     networks:

@@ -52,6 +52,7 @@ services:
       FRONTEND_URL: ${FRONTEND_URL}
       NODE_ENV: production
       PORT: 4000
+      DB_SYNC: ${DB_SYNC:-false}
     depends_on:
       postgres:
         condition: service_healthy

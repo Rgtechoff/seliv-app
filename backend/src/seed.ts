@@ -20,7 +20,10 @@ import { Mission } from './missions/entities/mission.entity';
 import { MissionOption } from './missions/entities/mission-option.entity';
 import { Subscription, SubscriptionStatus } from './subscriptions/entities/subscription.entity';
 import { ChatPreset } from './chat/entities/chat-preset.entity';
+import { ChatMessage } from './chat/entities/chat-message.entity';
 import { Availability } from './availabilities/entities/availability.entity';
+import { Review } from './reviews/entities/review.entity';
+import { Notification } from './notifications/entities/notification.entity';
 import { UserRole } from './common/enums/user-role.enum';
 import { VendorLevel } from './common/enums/vendor-level.enum';
 import { MissionStatus } from './common/enums/mission-status.enum';
@@ -32,7 +35,7 @@ dotenv.config();
 const AppDataSource = new DataSource({
   type: 'postgres',
   url: process.env.DATABASE_URL ?? 'postgresql://seliv:seliv_password@localhost:5432/seliv_db',
-  entities: [User, Mission, MissionOption, Subscription, ChatPreset, Availability],
+  entities: [User, Mission, MissionOption, Subscription, ChatPreset, ChatMessage, Availability, Review, Notification],
   synchronize: true,  // crée les tables si elles n'existent pas encore
   logging: false,
 });

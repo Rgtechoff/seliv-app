@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import Image from 'next/image';
+import { motion } from 'framer-motion';
 import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -22,9 +23,10 @@ const LEVEL_COLORS: Record<VendeurPublicItem['level'], string> = {
 
 interface VendeurCardProps {
   vendeur: VendeurPublicItem;
+  index?: number;
 }
 
-export function VendeurCard({ vendeur }: VendeurCardProps) {
+export function VendeurCard({ vendeur, index = 0 }: VendeurCardProps) {
   const initials =
     (vendeur.firstName?.[0] ?? '') + (vendeur.lastNameInitial?.[0] ?? '');
 
@@ -35,7 +37,14 @@ export function VendeurCard({ vendeur }: VendeurCardProps) {
   const extraCategories = vendeur.categories.length - 2;
 
   return (
-    <Card className="relative flex flex-col hover:shadow-lg transition-shadow duration-200">
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.35, delay: index * 0.07, ease: 'easeOut' }}
+      whileHover={{ y: -3, transition: { duration: 0.15 } }}
+      className="flex flex-col h-full"
+    >
+    <Card className="relative flex flex-col h-full hover:shadow-lg transition-shadow duration-200">
       {/* Star badge overlay */}
       {vendeur.isStar && (
         <span className="absolute top-3 right-3 z-10 bg-yellow-400 text-white text-xs font-bold px-2 py-0.5 rounded-full flex items-center gap-1">
@@ -123,5 +132,6 @@ export function VendeurCard({ vendeur }: VendeurCardProps) {
         </Button>
       </CardFooter>
     </Card>
+    </motion.div>
   );
 }

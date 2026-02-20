@@ -1,3 +1,6 @@
+'use client';
+
+import { motion } from 'framer-motion';
 import { Card, CardContent } from '@/components/ui/card';
 import { StarRating } from '@/components/star-rating';
 
@@ -68,8 +71,16 @@ export function TestimonialsSection() {
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {TESTIMONIALS.map((testimonial) => (
-            <TestimonialCard key={testimonial.name} testimonial={testimonial} />
+          {TESTIMONIALS.map((testimonial, i) => (
+            <motion.div
+              key={testimonial.name}
+              initial={{ opacity: 0, y: 24 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: '-60px' }}
+              transition={{ duration: 0.4, delay: i * 0.1, ease: 'easeOut' }}
+            >
+              <TestimonialCard testimonial={testimonial} />
+            </motion.div>
           ))}
         </div>
       </div>

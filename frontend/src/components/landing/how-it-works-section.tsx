@@ -1,4 +1,7 @@
+'use client';
+
 import { Target, UserCheck, Video, TrendingUp } from 'lucide-react';
+import { motion } from 'framer-motion';
 import { Card, CardContent } from '@/components/ui/card';
 
 const STEPS = [
@@ -45,31 +48,36 @@ export function HowItWorksSection() {
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
           {STEPS.map(({ icon: Icon, emoji, title, description, step }) => (
-            <Card
+            <motion.div
               key={step}
-              className="relative border border-gray-100 hover:border-indigo-200 hover:shadow-md transition-all group"
+              initial={{ opacity: 0, y: 24 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: '-60px' }}
+              transition={{ duration: 0.4, delay: (step - 1) * 0.1, ease: 'easeOut' }}
             >
-              <CardContent className="pt-6 pb-6 px-6 flex flex-col gap-4">
-                {/* Step number */}
-                <div className="flex items-center gap-3">
-                  <span className="flex-shrink-0 w-8 h-8 rounded-full bg-indigo-600 text-white text-sm font-bold flex items-center justify-center">
-                    {step}
-                  </span>
-                  <Icon className="w-5 h-5 text-indigo-500 group-hover:text-indigo-600 transition-colors" />
-                </div>
+              <Card className="relative border border-gray-100 hover:border-indigo-200 hover:shadow-md transition-all group h-full">
+                <CardContent className="pt-6 pb-6 px-6 flex flex-col gap-4">
+                  {/* Step number */}
+                  <div className="flex items-center gap-3">
+                    <span className="flex-shrink-0 w-8 h-8 rounded-full bg-indigo-600 text-white text-sm font-bold flex items-center justify-center">
+                      {step}
+                    </span>
+                    <Icon className="w-5 h-5 text-indigo-500 group-hover:text-indigo-600 transition-colors" />
+                  </div>
 
-                {/* Emoji + Title */}
-                <div>
-                  <span className="text-2xl" aria-hidden="true">
-                    {emoji}
-                  </span>
-                  <h3 className="mt-2 text-base font-semibold text-gray-900">{title}</h3>
-                </div>
+                  {/* Emoji + Title */}
+                  <div>
+                    <span className="text-2xl" aria-hidden="true">
+                      {emoji}
+                    </span>
+                    <h3 className="mt-2 text-base font-semibold text-gray-900">{title}</h3>
+                  </div>
 
-                {/* Description */}
-                <p className="text-sm text-gray-500 leading-relaxed">{description}</p>
-              </CardContent>
-            </Card>
+                  {/* Description */}
+                  <p className="text-sm text-gray-500 leading-relaxed">{description}</p>
+                </CardContent>
+              </Card>
+            </motion.div>
           ))}
         </div>
       </div>

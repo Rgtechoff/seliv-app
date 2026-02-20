@@ -7,6 +7,8 @@ import { LayoutDashboard, PlusCircle, History, CreditCard, LogOut } from 'lucide
 import { useAuth } from '@/lib/hooks/use-auth';
 import { NotificationBell } from '@/components/notification-bell';
 import { Button } from '@/components/ui/button';
+import { AppBottomNav } from '@/components/app-bottom-nav';
+import { PageTransition } from '@/components/page-transition';
 import { cn } from '@/lib/utils';
 
 const NAV = [
@@ -31,7 +33,8 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
 
   return (
     <div className="min-h-screen flex">
-      <aside className="w-56 bg-white border-r flex flex-col">
+      {/* Sidebar — desktop uniquement */}
+      <aside className="hidden md:flex w-56 bg-white border-r flex-col shrink-0">
         <div className="p-4 border-b">
           <Link href="/dashboard" className="text-xl font-bold text-primary">
             SELIV
@@ -64,13 +67,29 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
           </Button>
         </div>
       </aside>
-      <div className="flex-1 flex flex-col">
-        <header className="h-14 border-b bg-white flex items-center justify-between px-6">
+
+      <div className="flex-1 flex flex-col min-w-0">
+        {/* Header mobile */}
+        <header className="flex md:hidden h-14 border-b bg-white items-center justify-between px-4 sticky top-0 z-40">
+          <Link href="/dashboard" className="text-xl font-bold text-primary">
+            SELIV
+          </Link>
+          <NotificationBell />
+        </header>
+
+        {/* Header desktop */}
+        <header className="hidden md:flex h-14 border-b bg-white items-center justify-between px-6 shrink-0">
           <h1 className="text-sm font-medium text-muted-foreground">Espace client</h1>
           <NotificationBell />
         </header>
-        <main className="flex-1 p-6 bg-gray-50">{children}</main>
+
+        <main className="flex-1 p-4 md:p-6 pb-24 md:pb-6 bg-gray-50 overflow-y-auto">
+          <PageTransition>{children}</PageTransition>
+        </main>
       </div>
+
+      {/* Bottom nav — mobile uniquement */}
+      <AppBottomNav role="client" />
     </div>
   );
 }

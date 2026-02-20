@@ -33,7 +33,7 @@ const AppDataSource = new DataSource({
   type: 'postgres',
   url: process.env.DATABASE_URL ?? 'postgresql://seliv:seliv_password@localhost:5432/seliv_db',
   entities: [User, Mission, MissionOption, Subscription, ChatPreset, Availability],
-  synchronize: false,
+  synchronize: true,  // crée les tables si elles n'existent pas encore
   logging: false,
 });
 

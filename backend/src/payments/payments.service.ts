@@ -12,7 +12,7 @@ const PDFDocument = require('pdfkit') as typeof import('pdfkit');
 
 @Injectable()
 export class PaymentsService {
-  private readonly stripe: Stripe;
+  private readonly stripe: Stripe | null = null;
 
   constructor(
     private configService: ConfigService,
@@ -20,10 +20,10 @@ export class PaymentsService {
     @InjectRepository(Mission)
     private missionRepo: Repository<Mission>,
   ) {
-    this.stripe = new Stripe(
-      this.configService.getOrThrow<string>('STRIPE_SECRET_KEY'),
-      { apiVersion: '2026-01-28.clover' },
-    );
+    const stripeKey = this.configService.get<string>('STRIPE_SECRET_KEY');
+    if (stripeKey) {
+      this.stripe = new Stripe(stripeKey, { apiVersion: '2026-01-28.clover' });
+    }
   }
 
   async createCheckoutSession(
@@ -32,6 +32,7 @@ export class PaymentsService {
     clientEmail: string,
     frontendUrl: string,
   ): Promise<{ url: string }> {
+    if (!this.stripe) throw new Error('Stripe is not configured (STRIPE_SECRET_KEY missing)');
     const session = await this.stripe.checkout.sessions.create({
       payment_method_types: ['card'],
       line_items: [
@@ -66,9 +67,8 @@ export class PaymentsService {
   }
 
   async handleWebhook(rawBody: Buffer, signature: string): Promise<void> {
-    const webhookSecret = this.configService.getOrThrow<string>(
-      'STRIPE_WEBHOOK_SECRET',
-    );
+    if (!this.stripe) throw new Error('Stripe is not configured (STRIPE_SECRET_KEY missing)');
+    const webhookSecret = this.configService.get<string>('STRIPE_WEBHOOK_SECRET') ?? '';
     let event: Stripe.Event;
 
     try {
@@ -98,6 +98,7 @@ export class PaymentsService {
     paymentIntentId: string,
     amountCentimes: number,
   ): Promise<Stripe.Refund> {
+    if (!this.stripe) throw new Error('Stripe is not configured (STRIPE_SECRET_KEY missing)');
     return this.stripe.refunds.create({
       payment_intent: paymentIntentId,
       amount: amountCentimes,

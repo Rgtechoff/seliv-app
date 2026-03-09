@@ -22,7 +22,7 @@ const PLAN_DISCOUNTS: Record<SubscriptionPlan, number> = {
 
 @Injectable()
 export class SubscriptionsService {
-  private readonly stripe: Stripe;
+  private readonly stripe: Stripe | null = null;
 
   constructor(
     @InjectRepository(Subscription)
@@ -30,10 +30,10 @@ export class SubscriptionsService {
     private readonly usersService: UsersService,
     private configService: ConfigService,
   ) {
-    this.stripe = new Stripe(
-      this.configService.getOrThrow<string>('STRIPE_SECRET_KEY'),
-      { apiVersion: '2026-01-28.clover' },
-    );
+    const stripeKey = this.configService.get<string>('STRIPE_SECRET_KEY');
+    if (stripeKey) {
+      this.stripe = new Stripe(stripeKey, { apiVersion: '2026-01-28.clover' });
+    }
   }
 
   async findActiveByUserId(userId: string): Promise<Subscription | null> {
@@ -52,6 +52,8 @@ export class SubscriptionsService {
     plan: SubscriptionPlan,
     frontendUrl: string,
   ): Promise<{ url: string }> {
+    if (!this.stripe) throw new Error('Stripe is not configured (STRIPE_SECRET_KEY missing)');
+
     const user = await this.usersService.findById(userId);
     if (!user) throw new NotFoundException('User not found');
 

@@ -1,5 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { BadRequestException, NotFoundException } from '@nestjs/common';
+import { BadRequestException } from '@nestjs/common';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { MissionsService } from './missions.service';
 import { Mission } from './entities/mission.entity';
@@ -98,9 +98,8 @@ describe('MissionsService — State Machine', () => {
       mockRepo.save.mockImplementation(async (m) => m);
 
       const result = await service.cancel('mission-uuid', 'client-uuid', 'Test');
-      expect(result.status).toBe(MissionStatus.CANCELLED);
-      // refundAmount should be 100% = 50000
-      expect(result.refundAmount).toBe(50000);
+      expect(result.mission.status).toBe(MissionStatus.CANCELLED);
+      expect(result.refundPercent).toBe(100);
     });
 
     it('should grant 50% refund if cancellation is <48h before live', async () => {
@@ -115,9 +114,8 @@ describe('MissionsService — State Machine', () => {
       mockRepo.save.mockImplementation(async (m) => m);
 
       const result = await service.cancel('mission-uuid', 'client-uuid', 'Test');
-      expect(result.status).toBe(MissionStatus.CANCELLED);
-      // refundAmount should be 50% = 25000
-      expect(result.refundAmount).toBe(25000);
+      expect(result.mission.status).toBe(MissionStatus.CANCELLED);
+      expect(result.refundPercent).toBe(50);
     });
 
     it('should throw BadRequestException if mission is in_progress', async () => {

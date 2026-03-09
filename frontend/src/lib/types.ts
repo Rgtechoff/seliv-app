@@ -1,4 +1,4 @@
-export type UserRole = 'client' | 'vendeur' | 'moderateur' | 'admin';
+export type UserRole = 'client' | 'vendeur' | 'moderateur' | 'admin' | 'super_admin';
 export type VendorLevel = 'debutant' | 'confirme' | 'star';
 export type SubscriptionPlan = 'basic' | 'pro';
 export type MissionStatus =

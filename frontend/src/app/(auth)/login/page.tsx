@@ -25,6 +25,7 @@ const ROLE_REDIRECT: Record<UserRole, string> = {
   vendeur: '/vendeur/dashboard',
   moderateur: '/moderateur/dashboard',
   admin: '/admin/dashboard',
+  super_admin: '/super-admin/dashboard',
 };
 
 function LoginForm() {

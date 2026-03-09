@@ -3,13 +3,14 @@ import { ConflictException, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { AuthService } from './auth.service';
 import { UsersService } from '../users/users.service';
+import { UserRole } from '../common/enums/user-role.enum';
 import * as bcrypt from 'bcrypt';
 
 const mockUser = {
   id: 'uuid-1',
   email: 'test@example.com',
   passwordHash: 'hashed',
-  role: 'client',
+  role: UserRole.CLIENT,
   firstName: 'Jean',
   lastName: 'Dupont',
 };
@@ -49,10 +50,10 @@ describe('AuthService', () => {
         password: 'password123',
         firstName: 'Jean',
         lastName: 'Dupont',
-        role: 'client' as const,
+        role: UserRole.CLIENT,
       });
 
-      expect(result.token).toBe('mock-token');
+      expect(result.access_token).toBe('mock-token');
       expect(result.user.email).toBe('test@example.com');
       expect(mockUsersService.create).toHaveBeenCalled();
     });
@@ -66,7 +67,7 @@ describe('AuthService', () => {
           password: 'password123',
           firstName: 'Jean',
           lastName: 'Dupont',
-          role: 'client' as const,
+          role: UserRole.CLIENT,
         }),
       ).rejects.toThrow(ConflictException);
     });
@@ -77,8 +78,8 @@ describe('AuthService', () => {
       mockUsersService.findByEmail.mockResolvedValue(mockUser);
       jest.spyOn(bcrypt, 'compare').mockImplementation(async () => true);
 
-      const result = await service.login('test@example.com', 'password123');
-      expect(result.token).toBe('mock-token');
+      const result = await service.login({ email: 'test@example.com', password: 'password123' });
+      expect(result.access_token).toBe('mock-token');
       expect(result.user.email).toBe('test@example.com');
     });
 
@@ -86,7 +87,7 @@ describe('AuthService', () => {
       mockUsersService.findByEmail.mockResolvedValue(mockUser);
       jest.spyOn(bcrypt, 'compare').mockImplementation(async () => false);
 
-      await expect(service.login('test@example.com', 'wrongpassword')).rejects.toThrow(
+      await expect(service.login({ email: 'test@example.com', password: 'wrongpassword' })).rejects.toThrow(
         UnauthorizedException,
       );
     });
@@ -94,7 +95,7 @@ describe('AuthService', () => {
     it('should throw UnauthorizedException if user not found', async () => {
       mockUsersService.findByEmail.mockResolvedValue(null);
 
-      await expect(service.login('unknown@example.com', 'password')).rejects.toThrow(
+      await expect(service.login({ email: 'unknown@example.com', password: 'password' })).rejects.toThrow(
         UnauthorizedException,
       );
     });

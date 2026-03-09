@@ -69,6 +69,41 @@ export class User {
   @Column({ name: 'can_moderate', default: false })
   canModerate: boolean;
 
+  // Vendeur fields
+  @Column({ name: 'commission_rate', type: 'decimal', nullable: true })
+  commissionRate: number | null;
+
+  @Column({ name: 'onboarding_completed_at', type: 'timestamp', nullable: true })
+  onboardingCompletedAt: Date | null;
+
+  @Column({ name: 'last_active_at', type: 'timestamp', nullable: true })
+  lastActiveAt: Date | null;
+
+  @Column({ name: 'total_revenue_generated_cents', type: 'int', default: 0 })
+  totalRevenueGeneratedCents: number;
+
+  @Column({ name: 'suspension_reason', type: 'text', nullable: true })
+  suspensionReason: string | null;
+
+  @Column({ name: 'suspended_at', type: 'timestamp', nullable: true })
+  suspendedAt: Date | null;
+
+  // Client fields
+  @Column({ name: 'lifetime_value_cents', type: 'int', default: 0 })
+  lifetimeValueCents: number;
+
+  @Column({ name: 'missions_total', type: 'int', default: 0 })
+  missionsTotal: number;
+
+  @Column({ name: 'last_mission_at', type: 'timestamp', nullable: true })
+  lastMissionAt: Date | null;
+
+  @Column({ name: 'notes_admin', type: 'text', nullable: true })
+  notesAdmin: string | null;
+
+  @Column({ name: 'is_suspended', default: false })
+  isSuspended: boolean;
+
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;
 

@@ -1,5 +1,8 @@
+'use client';
+
 import Link from 'next/link';
 import { Check } from 'lucide-react';
+import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -63,9 +66,15 @@ export function PricingSection() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-3xl mx-auto">
-          {PLANS.map((plan) => (
-            <Card
+          {PLANS.map((plan, i) => (
+            <motion.div
               key={plan.name}
+              initial={{ opacity: 0, y: 24 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: '-60px' }}
+              transition={{ duration: 0.4, delay: i * 0.12, ease: 'easeOut' }}
+            >
+            <Card
               className={
                 plan.popular
                   ? 'border-2 border-indigo-600 shadow-xl relative'
@@ -116,6 +125,7 @@ export function PricingSection() {
                 </Button>
               </CardContent>
             </Card>
+            </motion.div>
           ))}
         </div>
       </div>

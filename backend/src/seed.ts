@@ -3,6 +3,7 @@
  * Usage : npm run seed
  *
  * Comptes créés :
+ *  superadmin@seliv.fr   / SuperAdmin1! (SUPER_ADMIN)
  *  admin@seliv.fr        / Admin1234!   (ADMIN)
  *  modo@seliv.fr         / Modo1234!    (MODERATEUR + canModerate)
  *  client1@seliv.fr      / Client1234!  (CLIENT)
@@ -24,6 +25,7 @@ import { ChatMessage } from './chat/entities/chat-message.entity';
 import { Availability } from './availabilities/entities/availability.entity';
 import { Review } from './reviews/entities/review.entity';
 import { Notification } from './notifications/entities/notification.entity';
+import { Plan } from './plans/entities/plan.entity';
 import { UserRole } from './common/enums/user-role.enum';
 import { VendorLevel } from './common/enums/vendor-level.enum';
 import { MissionStatus } from './common/enums/mission-status.enum';
@@ -35,7 +37,7 @@ dotenv.config();
 const AppDataSource = new DataSource({
   type: 'postgres',
   url: process.env.DATABASE_URL ?? 'postgresql://seliv:seliv_password@localhost:5432/seliv_db',
-  entities: [User, Mission, MissionOption, Subscription, ChatPreset, ChatMessage, Availability, Review, Notification],
+  entities: [User, Mission, MissionOption, Subscription, ChatPreset, ChatMessage, Availability, Review, Notification, Plan],
   synchronize: true,  // crée les tables si elles n'existent pas encore
   logging: false,
 });
@@ -62,6 +64,16 @@ async function seed() {
   console.log('🗑️  Tables vidées');
 
   // ── Utilisateurs ─────────────────────────────────────────────────────────
+  const superAdmin = userRepo.create({
+    email: 'superadmin@seliv.fr',
+    passwordHash: await hash('SuperAdmin1!'),
+    role: UserRole.SUPER_ADMIN,
+    firstName: 'Super',
+    lastName: 'Admin',
+    isValidated: true,
+    canModerate: true,
+  });
+
   const admin = userRepo.create({
     email: 'admin@seliv.fr',
     passwordHash: await hash('Admin1234!'),
@@ -132,9 +144,51 @@ async function seed() {
     categories: ['high-tech', 'électronique'],
   });
 
-  const [savedAdmin, savedModo, savedC1, savedC2, savedV1, savedV2] =
-    await userRepo.save([admin, modo, client1, client2, vendeur1, vendeur2]);
-  console.log(`👤 ${6} utilisateurs créés`);
+  const [, savedAdmin, savedModo, savedC1, savedC2, savedV1, savedV2] =
+    await userRepo.save([superAdmin, admin, modo, client1, client2, vendeur1, vendeur2]);
+  console.log(`👤 ${7} utilisateurs créés`);
+
+  // ── Plans d'abonnement ───────────────────────────────────────────────────
+  const planRepo = AppDataSource.getRepository(Plan);
+  await planRepo.save([
+    planRepo.create({
+      name: 'Basic',
+      slug: 'basic',
+      priceCents: 2900,
+      billingPeriod: 'monthly',
+      features: ['Accès standard aux missions', '5 missions/mois', 'Support email'],
+      hourlyDiscountCents: 500,
+      canAccessStar: false,
+      maxMissionsPerMonth: 5,
+      isActive: true,
+      sortOrder: 1,
+    }),
+    planRepo.create({
+      name: 'Pro',
+      slug: 'pro',
+      priceCents: 7900,
+      billingPeriod: 'monthly',
+      features: ['Missions illimitées', 'Accès vendeurs Star', 'Réduction horaire', 'Support prioritaire'],
+      hourlyDiscountCents: 1500,
+      canAccessStar: true,
+      maxMissionsPerMonth: null,
+      isActive: true,
+      sortOrder: 2,
+    }),
+    planRepo.create({
+      name: 'Enterprise',
+      slug: 'enterprise',
+      priceCents: 19900,
+      billingPeriod: 'monthly',
+      features: ['Missions illimitées', 'Vendeurs Star dédiés', 'Réduction horaire maximale', 'Account manager', 'Facturation personnalisée'],
+      hourlyDiscountCents: 3000,
+      canAccessStar: true,
+      maxMissionsPerMonth: null,
+      isActive: true,
+      sortOrder: 3,
+    }),
+  ]);
+  console.log('📦 Plans créés');
 
   // ── Abonnements vendeurs ──────────────────────────────────────────────────
   const now = new Date();
@@ -305,6 +359,7 @@ async function seed() {
   console.log('┌─────────────────────────────────────────────────────────┐');
   console.log('│  COMPTES DE TEST                                        │');
   console.log('├──────────────────────────┬──────────────────────────────┤');
+  console.log('│  superadmin@seliv.fr     │  SuperAdmin1! (Super Admin)  │');
   console.log('│  admin@seliv.fr          │  Admin1234!   (Admin)        │');
   console.log('│  modo@seliv.fr           │  Modo1234!    (Modérateur)   │');
   console.log('│  client1@seliv.fr        │  Client1234!  (Client)       │');

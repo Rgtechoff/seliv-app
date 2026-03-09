@@ -5,10 +5,10 @@ import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { MapPin, Clock, Package } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { Card, CardContent, CardFooter } from '@/components/ui/card';
+import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { StatusBadge } from '@/components/status-badge';
-import { formatPrice, type Mission } from '@/lib/types';
+import { formatPrice, type Mission, type MissionStatus } from '@/lib/types';
 
 interface MissionCardProps {
   mission: Mission;
@@ -16,6 +16,16 @@ interface MissionCardProps {
   actions?: React.ReactNode;
   index?: number;
 }
+
+const STATUS_BORDER: Record<MissionStatus, string> = {
+  draft: 'border-l-slate-300',
+  pending_payment: 'border-l-amber-400',
+  paid: 'border-l-blue-400',
+  assigned: 'border-l-indigo-400',
+  in_progress: 'border-l-violet-500',
+  completed: 'border-l-green-500',
+  cancelled: 'border-l-red-400',
+};
 
 export function MissionCard({ mission, href, actions, index = 0 }: MissionCardProps) {
   return (
@@ -25,12 +35,19 @@ export function MissionCard({ mission, href, actions, index = 0 }: MissionCardPr
       transition={{ duration: 0.3, delay: index * 0.06, ease: 'easeOut' }}
       whileHover={{ y: -2, transition: { duration: 0.15 } }}
     >
-      <Card className="hover:shadow-md transition-shadow">
-        <CardContent className="pt-4 space-y-3">
+      <div
+        className={cn(
+          'bg-card border border-border rounded-xl overflow-hidden',
+          'border-l-4',
+          STATUS_BORDER[mission.status],
+          'hover:shadow-md transition-shadow',
+        )}
+      >
+        <div className="p-4 space-y-3">
           <div className="flex items-start justify-between gap-2">
             <div>
-              <p className="font-semibold capitalize">{mission.category}</p>
-              <p className="text-xs text-muted-foreground">
+              <p className="font-semibold capitalize text-foreground">{mission.category}</p>
+              <p className="text-xs text-muted-foreground mt-0.5">
                 {format(new Date(mission.date), 'EEEE d MMMM yyyy', { locale: fr })}
               </p>
             </div>
@@ -50,18 +67,18 @@ export function MissionCard({ mission, href, actions, index = 0 }: MissionCardPr
               <Package className="h-3.5 w-3.5 shrink-0" />
               <span>{mission.volume} articles</span>
             </div>
-            <div className="font-medium text-foreground">
+            <div className="font-semibold text-foreground">
               {formatPrice(mission.totalPrice)}
             </div>
           </div>
-        </CardContent>
-        <CardFooter className="gap-2">
+        </div>
+        <div className="px-4 pb-4 flex gap-2">
           <Button asChild variant="outline" size="sm" className="flex-1">
             <Link href={href}>Voir les détails</Link>
           </Button>
           {actions}
-        </CardFooter>
-      </Card>
+        </div>
+      </div>
     </motion.div>
   );
 }

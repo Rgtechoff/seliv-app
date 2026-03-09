@@ -131,7 +131,7 @@ export default function AdminDashboardPage() {
                   </defs>
                   <XAxis dataKey="month" tick={{ fontSize: 12 }} />
                   <YAxis tickFormatter={yAxisRevenueFormatter} tick={{ fontSize: 12 }} />
-                  <Tooltip formatter={(value: number | string | undefined) => [`${value ?? 0}€`, 'Revenus']} />
+                  <Tooltip formatter={(value) => [`${value as number ?? 0}€`, 'Revenus']} />
                   <Area
                     type="monotone"
                     dataKey="revenus"

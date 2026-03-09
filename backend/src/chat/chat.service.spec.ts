@@ -58,18 +58,18 @@ describe('ChatService — Modération', () => {
 
   blockedCases.forEach(({ desc, content }) => {
     it(`doit flaguer un message contenant ${desc}`, async () => {
-      const msg = await service.sendMessage('mission-id', 'sender-id', content);
+      const msg = await service.sendMessage('mission-id', 'sender-id', content, false);
       expect(msg.isFlagged).toBe(true);
     });
   });
 
   it('doit laisser passer un message normal', async () => {
-    const msg = await service.sendMessage('mission-id', 'sender-id', 'Le live commence dans 5 min !');
+    const msg = await service.sendMessage('mission-id', 'sender-id', 'Le live commence dans 5 min !', false);
     expect(msg.isFlagged).toBe(false);
   });
 
   it('doit laisser passer un message de 9 chiffres (non bloqué)', async () => {
-    const msg = await service.sendMessage('mission-id', 'sender-id', 'Boîte n°123456789');
+    const msg = await service.sendMessage('mission-id', 'sender-id', 'Boîte n°123456789', false);
     expect(msg.isFlagged).toBe(false);
   });
 });

@@ -4,7 +4,7 @@ import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
 import { SuperAdminGuard } from '../../common/guards/super-admin.guard';
 import { VendorLevel } from '../../common/enums/vendor-level.enum';
 
-@Controller('api/v1/super-admin/vendeurs')
+@Controller('super-admin/vendeurs')
 @UseGuards(JwtAuthGuard, SuperAdminGuard)
 export class SuperAdminVendeursController {
   constructor(private readonly service: SuperAdminVendeursService) {}

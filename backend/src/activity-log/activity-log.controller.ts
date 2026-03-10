@@ -10,7 +10,7 @@ import { ActivityLogService } from './activity-log.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { SuperAdminGuard } from '../common/guards/super-admin.guard';
 
-@Controller('api/v1/super-admin/activity-log')
+@Controller('super-admin/activity-log')
 @UseGuards(JwtAuthGuard, SuperAdminGuard)
 export class ActivityLogController {
   constructor(private readonly service: ActivityLogService) {}

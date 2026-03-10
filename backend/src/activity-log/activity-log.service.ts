@@ -31,12 +31,11 @@ export class ActivityLogService {
 
   async findAll(
     filters: ActivityLogFilters = {},
-  ): Promise<{ data: ActivityLog[]; nextCursor: string | null }> {
+  ): Promise<{ data: ActivityLog[]; nextCursor: string | null; total: number }> {
     const limit = Math.min(filters.limit ?? 50, 200);
     const qb = this.repo
       .createQueryBuilder('log')
-      .orderBy('log.createdAt', 'DESC')
-      .limit(limit + 1);
+      .orderBy('log.createdAt', 'DESC');
 
     if (filters.actorId) {
       qb.andWhere('log.actorId = :actorId', { actorId: filters.actorId });
@@ -53,6 +52,9 @@ export class ActivityLogService {
     if (filters.toDate) {
       qb.andWhere('log.createdAt <= :toDate', { toDate: filters.toDate });
     }
+
+    const total = await qb.getCount();
+
     if (filters.cursor) {
       const cursorDate = new Date(
         Buffer.from(filters.cursor, 'base64').toString(),
@@ -60,6 +62,7 @@ export class ActivityLogService {
       qb.andWhere('log.createdAt < :cursor', { cursor: cursorDate });
     }
 
+    qb.limit(limit + 1);
     const results = await qb.getMany();
     const hasMore = results.length > limit;
     const data = hasMore ? results.slice(0, limit) : results;
@@ -68,7 +71,7 @@ export class ActivityLogService {
         ? Buffer.from(data[data.length - 1].createdAt.toISOString()).toString('base64')
         : null;
 
-    return { data, nextCursor };
+    return { data, nextCursor, total };
   }
 
   async exportCsv(filters: ActivityLogFilters = {}): Promise<string> {

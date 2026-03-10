@@ -3,7 +3,7 @@ import { SuperAdminClientsService } from './super-admin-clients.service';
 import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
 import { SuperAdminGuard } from '../../common/guards/super-admin.guard';
 
-@Controller('api/v1/super-admin/clients')
+@Controller('super-admin/clients')
 @UseGuards(JwtAuthGuard, SuperAdminGuard)
 export class SuperAdminClientsController {
   constructor(private readonly service: SuperAdminClientsService) {}

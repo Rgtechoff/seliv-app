@@ -15,7 +15,7 @@ import { UpdateServiceItemDto } from './dto/update-service-item.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { SuperAdminGuard } from '../common/guards/super-admin.guard';
 
-@Controller('api/v1')
+@Controller('')
 export class ServicesCatalogController {
   constructor(private readonly service: ServicesCatalogService) {}
 

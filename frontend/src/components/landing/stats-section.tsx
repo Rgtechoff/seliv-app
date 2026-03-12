@@ -16,8 +16,8 @@ const STATS: Stat[] = [
 
 export function StatsSection() {
   return (
-    <section className="py-20 bg-indigo-700 text-white">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <section className="py-16 md:py-24 bg-gradient-to-br from-primary/20 via-background to-background">
+      <div className="max-w-6xl mx-auto px-4">
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-8 text-center">
           {STATS.map((stat, i) => (
             <motion.div
@@ -28,8 +28,8 @@ export function StatsSection() {
               viewport={{ once: true, margin: '-40px' }}
               transition={{ duration: 0.4, delay: i * 0.08, ease: 'easeOut' }}
             >
-              <span className="text-4xl sm:text-5xl font-bold">{stat.value}</span>
-              <span className="text-indigo-200 text-sm sm:text-base">{stat.label}</span>
+              <span className="text-4xl sm:text-5xl font-bold text-foreground">{stat.value}</span>
+              <span className="text-foreground-secondary text-sm sm:text-base">{stat.label}</span>
             </motion.div>
           ))}
         </div>

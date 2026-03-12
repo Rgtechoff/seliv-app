@@ -30,7 +30,7 @@ const NAV_LINKS = [
 function UserAvatar({ firstName, lastName }: { firstName: string; lastName: string }) {
   const initials = `${firstName.charAt(0)}${lastName.charAt(0)}`.toUpperCase();
   return (
-    <div className="w-8 h-8 rounded-full bg-indigo-600 text-white flex items-center justify-center text-sm font-semibold select-none">
+    <div className="w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center text-sm font-semibold select-none">
       {initials}
     </div>
   );
@@ -43,11 +43,11 @@ export function PublicHeader() {
   const dashboardHref = user ? (ROLE_DASHBOARD[user.role] ?? '/dashboard') : '/dashboard';
 
   return (
-    <header className="sticky top-0 z-50 bg-white shadow-sm">
+    <header className="sticky top-0 z-50 bg-sidebar/80 backdrop-blur-md border-b border-border">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
-          <Link href="/" className="text-2xl font-bold text-indigo-600 shrink-0">
+          <Link href="/" className="text-2xl font-black text-primary shrink-0 tracking-tight">
             SELIV
           </Link>
 
@@ -57,7 +57,7 @@ export function PublicHeader() {
               <Link
                 key={link.href}
                 href={link.href}
-                className="text-sm font-medium text-gray-600 hover:text-indigo-600 transition-colors"
+                className="text-sm font-medium text-foreground-secondary hover:text-foreground transition-colors"
               >
                 {link.label}
               </Link>
@@ -69,13 +69,13 @@ export function PublicHeader() {
             {isAuthenticated && user ? (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <button className="flex items-center gap-2 rounded-full px-2 py-1 hover:bg-gray-100 transition-colors">
+                  <button className="flex items-center gap-2 rounded-full px-2 py-1 hover:bg-primary/10 transition-colors">
                     <UserAvatar firstName={user.firstName} lastName={user.lastName} />
-                    <span className="text-sm font-medium text-gray-700">{user.firstName}</span>
-                    <ChevronDown className="w-4 h-4 text-gray-400" />
+                    <span className="text-sm font-medium text-foreground">{user.firstName}</span>
+                    <ChevronDown className="w-4 h-4 text-foreground-secondary" />
                   </button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-52">
+                <DropdownMenuContent align="end" className="w-52 bg-card border-border">
                   <DropdownMenuItem asChild>
                     <Link href={dashboardHref}>Mon Dashboard</Link>
                   </DropdownMenuItem>
@@ -85,7 +85,7 @@ export function PublicHeader() {
                   <DropdownMenuSeparator />
                   <DropdownMenuItem
                     onClick={logout}
-                    className="text-red-600 focus:text-red-600 cursor-pointer"
+                    className="text-red-400 focus:text-red-400 cursor-pointer"
                   >
                     Déconnexion
                   </DropdownMenuItem>
@@ -93,10 +93,19 @@ export function PublicHeader() {
               </DropdownMenu>
             ) : (
               <>
-                <Button variant="ghost" size="sm" asChild>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="text-foreground-secondary hover:text-foreground hover:bg-primary/10"
+                  asChild
+                >
                   <Link href="/login">Se connecter</Link>
                 </Button>
-                <Button size="sm" asChild>
+                <Button
+                  size="sm"
+                  className="bg-primary hover:bg-primary/90 text-white rounded-lg font-medium transition-colors"
+                  asChild
+                >
                   <Link href="/register">S&apos;inscrire</Link>
                 </Button>
               </>
@@ -105,7 +114,7 @@ export function PublicHeader() {
 
           {/* Mobile hamburger */}
           <button
-            className="md:hidden p-2 rounded-md text-gray-600 hover:text-indigo-600 hover:bg-gray-100 transition-colors"
+            className="md:hidden p-2 rounded-md text-foreground-secondary hover:text-primary hover:bg-primary/10 transition-colors"
             onClick={() => setMobileOpen((prev) => !prev)}
             aria-label={mobileOpen ? 'Fermer le menu' : 'Ouvrir le menu'}
           >
@@ -116,30 +125,30 @@ export function PublicHeader() {
 
       {/* Mobile menu */}
       {mobileOpen && (
-        <div className="md:hidden border-t bg-white px-4 py-4 space-y-3">
+        <div className="md:hidden border-t border-border bg-sidebar px-4 py-4 space-y-3">
           {NAV_LINKS.map((link) => (
             <Link
               key={link.href}
               href={link.href}
-              className="block text-sm font-medium text-gray-600 hover:text-indigo-600 transition-colors py-1"
+              className="block text-sm font-medium text-foreground-secondary hover:text-primary transition-colors py-1"
               onClick={() => setMobileOpen(false)}
             >
               {link.label}
             </Link>
           ))}
-          <div className="pt-3 border-t space-y-2">
+          <div className="pt-3 border-t border-border space-y-2">
             {isAuthenticated && user ? (
               <>
                 <Link
                   href={dashboardHref}
-                  className="block text-sm font-medium text-gray-700 py-1"
+                  className="block text-sm font-medium text-foreground py-1"
                   onClick={() => setMobileOpen(false)}
                 >
                   Mon Dashboard
                 </Link>
                 <Link
                   href="/vendeurs"
-                  className="block text-sm font-medium text-gray-700 py-1"
+                  className="block text-sm font-medium text-foreground py-1"
                   onClick={() => setMobileOpen(false)}
                 >
                   Explorer les vendeurs
@@ -149,19 +158,28 @@ export function PublicHeader() {
                     setMobileOpen(false);
                     logout();
                   }}
-                  className="block text-sm font-medium text-red-600 py-1"
+                  className="block text-sm font-medium text-red-400 py-1"
                 >
                   Déconnexion
                 </button>
               </>
             ) : (
               <>
-                <Button variant="outline" size="sm" className="w-full" asChild>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="w-full border-border text-foreground hover:bg-primary/10"
+                  asChild
+                >
                   <Link href="/login" onClick={() => setMobileOpen(false)}>
                     Se connecter
                   </Link>
                 </Button>
-                <Button size="sm" className="w-full" asChild>
+                <Button
+                  size="sm"
+                  className="w-full bg-primary hover:bg-primary/90 text-white rounded-lg font-medium transition-colors"
+                  asChild
+                >
                   <Link href="/register" onClick={() => setMobileOpen(false)}>
                     S&apos;inscrire
                   </Link>

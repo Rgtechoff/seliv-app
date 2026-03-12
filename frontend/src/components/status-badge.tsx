@@ -22,38 +22,38 @@ interface StatusConfig {
 const STATUS_CONFIG: Record<MissionStatus, StatusConfig> = {
   draft: {
     icon: FileEdit,
-    className: 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400',
-    dotClass: 'bg-slate-400',
+    className: 'bg-muted text-foreground-secondary',
+    dotClass: 'bg-foreground-secondary',
   },
   pending_payment: {
     icon: Clock,
-    className: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400',
+    className: 'bg-amber-900/30 text-amber-400',
     dotClass: 'bg-amber-400',
   },
   paid: {
     icon: CreditCard,
-    className: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400',
+    className: 'bg-blue-900/30 text-blue-400',
     dotClass: 'bg-blue-400',
   },
   assigned: {
     icon: UserCheck,
-    className: 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-400',
+    className: 'bg-indigo-900/30 text-indigo-400',
     dotClass: 'bg-indigo-400',
   },
   in_progress: {
     icon: PlayCircle,
-    className: 'bg-violet-100 text-violet-700 dark:bg-violet-900/30 dark:text-violet-400',
+    className: 'bg-violet-900/30 text-violet-400',
     dotClass: 'bg-violet-500',
     pulse: true,
   },
   completed: {
     icon: CheckCircle2,
-    className: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400',
+    className: 'bg-green-900/30 text-green-400',
     dotClass: 'bg-green-500',
   },
   cancelled: {
     icon: XCircle,
-    className: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400',
+    className: 'bg-red-900/30 text-red-400',
     dotClass: 'bg-red-400',
   },
 };

@@ -37,11 +37,11 @@ const STEPS = [
 
 export function HowItWorksSection() {
   return (
-    <section id="how-it-works" className="py-20 bg-white">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <section id="how-it-works" className="py-16 md:py-24 bg-background">
+      <div className="max-w-6xl mx-auto px-4">
         <div className="text-center mb-12">
-          <h2 className="text-3xl sm:text-4xl font-bold text-gray-900">Comment ça marche ?</h2>
-          <p className="mt-4 text-lg text-gray-600 max-w-2xl mx-auto">
+          <h2 className="text-3xl sm:text-4xl font-bold text-foreground">Comment ça marche ?</h2>
+          <p className="mt-4 text-lg text-foreground-secondary max-w-2xl mx-auto">
             De la réservation aux résultats, SELIV gère tout pour vous.
           </p>
         </div>
@@ -55,14 +55,14 @@ export function HowItWorksSection() {
               viewport={{ once: true, margin: '-60px' }}
               transition={{ duration: 0.4, delay: (step - 1) * 0.1, ease: 'easeOut' }}
             >
-              <Card className="relative border border-gray-100 hover:border-indigo-200 hover:shadow-md transition-all group h-full">
+              <Card className="relative bg-card border border-border rounded-xl shadow-card hover:shadow-hover hover:border-primary/30 transition-all group h-full">
                 <CardContent className="pt-6 pb-6 px-6 flex flex-col gap-4">
                   {/* Step number */}
                   <div className="flex items-center gap-3">
-                    <span className="flex-shrink-0 w-8 h-8 rounded-full bg-indigo-600 text-white text-sm font-bold flex items-center justify-center">
+                    <span className="flex-shrink-0 w-8 h-8 rounded-full bg-primary text-white text-sm font-bold flex items-center justify-center">
                       {step}
                     </span>
-                    <Icon className="w-5 h-5 text-indigo-500 group-hover:text-indigo-600 transition-colors" />
+                    <Icon className="w-5 h-5 text-primary/70 group-hover:text-primary transition-colors" />
                   </div>
 
                   {/* Emoji + Title */}
@@ -70,11 +70,11 @@ export function HowItWorksSection() {
                     <span className="text-2xl" aria-hidden="true">
                       {emoji}
                     </span>
-                    <h3 className="mt-2 text-base font-semibold text-gray-900">{title}</h3>
+                    <h3 className="mt-2 text-base font-semibold text-foreground">{title}</h3>
                   </div>
 
                   {/* Description */}
-                  <p className="text-sm text-gray-500 leading-relaxed">{description}</p>
+                  <p className="text-sm text-foreground-secondary leading-relaxed">{description}</p>
                 </CardContent>
               </Card>
             </motion.div>

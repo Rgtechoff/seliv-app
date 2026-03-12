@@ -30,7 +30,7 @@ export function AppBottomNav({ role }: AppBottomNavProps) {
 
   return (
     <nav
-      className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-gray-200 shadow-lg"
+      className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-sidebar border-t border-border shadow-modal"
       style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
     >
       <div className="flex">
@@ -45,20 +45,20 @@ export function AppBottomNav({ role }: AppBottomNavProps) {
               {isActive && (
                 <motion.div
                   layoutId="bottom-nav-indicator"
-                  className="absolute top-0 left-1/2 -translate-x-1/2 w-10 h-0.5 bg-indigo-600 rounded-full"
+                  className="absolute top-0 left-1/2 -translate-x-1/2 w-10 h-0.5 bg-primary rounded-full"
                   transition={{ type: 'spring', stiffness: 500, damping: 40 }}
                 />
               )}
               <Icon
                 className={cn(
                   'h-5 w-5 transition-colors duration-200',
-                  isActive ? 'text-indigo-600' : 'text-gray-400',
+                  isActive ? 'text-primary' : 'text-foreground-secondary',
                 )}
               />
               <span
                 className={cn(
                   'text-[10px] font-medium transition-colors duration-200',
-                  isActive ? 'text-indigo-600' : 'text-gray-400',
+                  isActive ? 'text-primary' : 'text-foreground-secondary',
                 )}
               >
                 {label}

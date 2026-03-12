@@ -54,16 +54,16 @@ function SidebarContent({
       {/* Logo + badge */}
       <div className="px-4 py-5 border-b border-border">
         <div className="flex items-center gap-2">
-          <span className="text-xl font-black text-primary">SELIV</span>
-          <span className="bg-red-500 text-white text-xs font-bold px-2 py-0.5 rounded-full">
+          <span className="text-xl font-black text-foreground">SELIV</span>
+          <span className="bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded">
             SUPER
           </span>
         </div>
-        <p className="text-xs text-muted-foreground mt-1">Panel d&apos;administration</p>
+        <p className="text-xs text-foreground-secondary mt-1">Panel d&apos;administration</p>
       </div>
 
       {/* Nav */}
-      <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
+      <nav className="flex-1 px-3 py-4 space-y-0.5 overflow-y-auto">
         {NAV_ITEMS.map(({ href, label, icon: Icon }) => {
           const isActive = pathname === href || pathname.startsWith(href + '/');
           return (
@@ -72,13 +72,13 @@ function SidebarContent({
               href={href}
               onClick={onLinkClick}
               className={cn(
-                'flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors',
+                'flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors',
                 isActive
-                  ? 'bg-primary text-primary-foreground'
-                  : 'text-muted-foreground hover:text-foreground hover:bg-muted',
+                  ? 'bg-primary-light border-l-[3px] border-primary text-foreground font-medium'
+                  : 'text-foreground-secondary hover:text-foreground hover:bg-primary-light',
               )}
             >
-              <Icon className="w-4 h-4 flex-shrink-0" />
+              <Icon className={cn('w-4 h-4 flex-shrink-0', isActive ? 'text-primary' : '')} />
               {label}
             </Link>
           );
@@ -89,7 +89,7 @@ function SidebarContent({
       <div className="px-3 py-4 border-t border-border">
         <button
           onClick={handleLogout}
-          className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted w-full transition-colors"
+          className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-foreground-secondary hover:text-foreground hover:bg-primary-light w-full transition-colors"
         >
           <LogOut className="w-4 h-4" />
           Déconnexion
@@ -118,7 +118,7 @@ export default function SuperAdminLayout({ children }: { children: React.ReactNo
   return (
     <div className="flex h-screen bg-background overflow-hidden">
       {/* Desktop sidebar */}
-      <aside className="hidden md:flex w-64 flex-col bg-card border-r border-border flex-shrink-0">
+      <aside className="hidden md:flex w-64 flex-col bg-sidebar border-r border-border flex-shrink-0">
         <SidebarContent pathname={pathname} />
       </aside>
 
@@ -127,14 +127,14 @@ export default function SuperAdminLayout({ children }: { children: React.ReactNo
         {drawerOpen && (
           <>
             <motion.div
-              className="fixed inset-0 bg-black/50 z-40 md:hidden"
+              className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 md:hidden"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setDrawerOpen(false)}
             />
             <motion.aside
-              className="fixed left-0 top-0 bottom-0 w-64 bg-card border-r border-border z-50 md:hidden flex flex-col"
+              className="fixed left-0 top-0 bottom-0 w-64 bg-sidebar border-r border-border z-50 md:hidden flex flex-col"
               initial={{ x: -256 }}
               animate={{ x: 0 }}
               exit={{ x: -256 }}
@@ -152,11 +152,11 @@ export default function SuperAdminLayout({ children }: { children: React.ReactNo
       {/* Main content */}
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
         {/* Header */}
-        <header className="h-14 border-b border-border bg-card flex items-center justify-between px-4 flex-shrink-0">
+        <header className="h-14 border-b border-border bg-sidebar flex items-center justify-between px-4 flex-shrink-0">
           <div className="flex items-center gap-3">
             {/* Mobile hamburger */}
             <button
-              className="md:hidden p-1.5 rounded-md hover:bg-muted transition-colors"
+              className="md:hidden p-1.5 rounded-md text-foreground-secondary hover:text-foreground hover:bg-primary-light transition-colors"
               onClick={() => setDrawerOpen(true)}
             >
               <Menu className="w-5 h-5" />
@@ -164,21 +164,21 @@ export default function SuperAdminLayout({ children }: { children: React.ReactNo
             {/* Desktop: shield icon + title */}
             <div className="hidden md:flex items-center gap-2">
               <Shield className="w-4 h-4 text-red-500" />
-              <span className="font-semibold text-sm">Super Administration</span>
+              <span className="font-semibold text-sm text-foreground">Super Administration</span>
             </div>
           </div>
 
           <div className="flex items-center gap-2">
             <ThemeToggle />
-            <button className="p-1.5 rounded-md hover:bg-muted transition-colors relative">
-              <Bell className="w-4 h-4" />
+            <button className="p-1.5 rounded-md hover:bg-primary-light transition-colors relative">
+              <Bell className="w-4 h-4 text-foreground-secondary" />
             </button>
             {user && (
-              <div className="flex items-center gap-2 ml-2">
+              <div className="flex items-center gap-2 ml-1">
                 <div className="w-7 h-7 rounded-full bg-red-500 flex items-center justify-center text-white text-xs font-bold">
                   {user.firstName?.[0]?.toUpperCase() ?? 'S'}
                 </div>
-                <span className="hidden sm:block text-sm font-medium">
+                <span className="hidden sm:block text-sm font-medium text-foreground">
                   {user.firstName}
                 </span>
               </div>

@@ -32,14 +32,14 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
   if (isLoading || !user) return null;
 
   return (
-    <div className="min-h-screen flex">
+    <div className="min-h-screen flex bg-background">
       {/* Sidebar — desktop uniquement */}
-      <aside className="hidden md:flex w-56 bg-white border-r flex-col shrink-0">
-        <div className="p-4 border-b">
+      <aside className="hidden md:flex w-56 bg-sidebar border-r border-border flex-col shrink-0">
+        <div className="p-4 border-b border-border">
           <Link href="/dashboard" className="text-xl font-bold text-primary">
             SELIV
           </Link>
-          <p className="text-xs text-muted-foreground mt-0.5">
+          <p className="text-xs text-foreground-secondary mt-0.5">
             {user.companyName ?? `${user.firstName} ${user.lastName}`}
           </p>
         </div>
@@ -49,19 +49,24 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
               key={href}
               href={href}
               className={cn(
-                'flex items-center gap-2 px-3 py-2 rounded-md text-sm transition-colors',
+                'flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-colors',
                 pathname === href
-                  ? 'bg-primary text-primary-foreground'
-                  : 'hover:bg-muted text-foreground',
+                  ? 'bg-primary-light border-l-[3px] border-primary text-foreground font-medium'
+                  : 'hover:bg-muted text-foreground-secondary hover:text-foreground',
               )}
             >
-              <Icon className="h-4 w-4" />
+              <Icon className={cn('h-4 w-4', pathname === href ? 'text-primary' : '')} />
               {label}
             </Link>
           ))}
         </nav>
-        <div className="p-3 border-t">
-          <Button variant="ghost" size="sm" className="w-full justify-start" onClick={logout}>
+        <div className="p-3 border-t border-border">
+          <Button
+            variant="ghost"
+            size="sm"
+            className="w-full justify-start text-foreground-secondary hover:text-foreground hover:bg-muted"
+            onClick={logout}
+          >
             <LogOut className="h-4 w-4 mr-2" />
             Déconnexion
           </Button>
@@ -70,7 +75,7 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
 
       <div className="flex-1 flex flex-col min-w-0">
         {/* Header mobile */}
-        <header className="flex md:hidden h-14 border-b bg-white items-center justify-between px-4 sticky top-0 z-40">
+        <header className="flex md:hidden h-14 border-b border-border bg-sidebar items-center justify-between px-4 sticky top-0 z-40">
           <Link href="/dashboard" className="text-xl font-bold text-primary">
             SELIV
           </Link>
@@ -78,12 +83,12 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
         </header>
 
         {/* Header desktop */}
-        <header className="hidden md:flex h-14 border-b bg-white items-center justify-between px-6 shrink-0">
-          <h1 className="text-sm font-medium text-muted-foreground">Espace client</h1>
+        <header className="hidden md:flex h-14 border-b border-border bg-sidebar items-center justify-between px-6 shrink-0">
+          <h1 className="text-sm font-medium text-foreground-secondary">Espace client</h1>
           <NotificationBell />
         </header>
 
-        <main className="flex-1 p-4 md:p-6 pb-24 md:pb-6 bg-gray-50 overflow-y-auto">
+        <main className="flex-1 p-4 md:p-6 pb-24 md:pb-6 bg-background overflow-y-auto">
           <PageTransition>{children}</PageTransition>
         </main>
       </div>

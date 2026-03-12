@@ -3,48 +3,106 @@
 @tailwind utilities;
 
 @layer base {
+  /*
+   * SELIV Design System — Dark-first theme
+   * All tokens sourced from Figma exports (design-system teammate, 2026-03-10)
+   * Both :root and .dark are set to the dark palette so shadcn/ui components
+   * always render in dark mode regardless of ThemeProvider state.
+   */
   :root {
-    --background: 0 0% 98%;
-    --foreground: 222 47% 11%;
-    --card: 0 0% 100%;
-    --card-foreground: 222 47% 11%;
-    --popover: 0 0% 100%;
-    --popover-foreground: 222 47% 11%;
-    --primary: 239 84% 67%;
+    /* ── Core backgrounds ── */
+    --background: 268 55% 7%;        /* #0f091c */
+    --foreground: 0 0% 100%;         /* #ffffff */
+    --foreground-secondary: 218 11% 65%; /* #9ca3af */
+
+    /* ── Cards / Surfaces ── */
+    --card: 255 45% 12%;             /* #1a122e */
+    --card-foreground: 0 0% 100%;
+    --popover: 255 45% 12%;
+    --popover-foreground: 0 0% 100%;
+
+    /* ── Primary — violet ── */
+    --primary: 262 90% 59%;          /* #7a38f5 */
     --primary-foreground: 0 0% 100%;
-    --secondary: 262 83% 58%;
+    --primary-light: 264 50% 15%;    /* #20133a */
+
+    /* ── Secondary — maps to card surface ── */
+    --secondary: 255 45% 12%;
     --secondary-foreground: 0 0% 100%;
-    --muted: 210 40% 96%;
-    --muted-foreground: 215 16% 47%;
-    --accent: 239 84% 67%;
+
+    /* ── Muted ── */
+    --muted: 264 48% 10%;            /* #140d24 — sidebar color */
+    --muted-foreground: 218 11% 65%; /* #9ca3af */
+
+    /* ── Accent ── */
+    --accent: 271 91% 65%;           /* #a855f7 */
+    --accent-foreground: 0 0% 100%;
+
+    /* ── Destructive ── */
+    --destructive: 0 84% 60%;        /* #ef4444 */
+    --destructive-foreground: 0 0% 100%;
+
+    /* ── Borders & Inputs ── */
+    --border: 262 29% 20%;           /* #2d2442 */
+    --border-hover: 262 29% 28%;     /* #3f325c */
+    --input: 262 29% 20%;
+
+    /* ── Focus ring ── */
+    --ring: 262 90% 59%;
+
+    /* ── Radius base (8px) ── */
+    --radius: 0.5rem;
+
+    /* ── Custom surfaces ── */
+    --sidebar: 264 48% 10%;          /* #140d24 */
+
+    /* ── Semantic colors ── */
+    --success: 160 84% 39%;          /* #10b981 */
+    --warning: 38 92% 50%;           /* #f59e0b */
+    --error: 0 84% 60%;              /* #ef4444 */
+    --info: 217 91% 60%;             /* #3b82f6 */
+
+    /* ── Box shadows (stored as custom props for reference) ── */
+    --shadow-card: 0 4px 6px -1px rgba(0,0,0,0.2), 0 2px 4px -1px rgba(0,0,0,0.1);
+    --shadow-hover: 0 10px 15px -3px rgba(0,0,0,0.3);
+    --shadow-dropdown: 0 20px 25px -5px rgba(0,0,0,0.4);
+    --shadow-modal: 0 25px 50px -12px rgba(0,0,0,0.5);
+  }
+
+  /* Mirror dark palette in .dark so shadcn/ui ThemeProvider stays consistent */
+  .dark {
+    --background: 268 55% 7%;
+    --foreground: 0 0% 100%;
+    --foreground-secondary: 218 11% 65%;
+    --card: 255 45% 12%;
+    --card-foreground: 0 0% 100%;
+    --popover: 255 45% 12%;
+    --popover-foreground: 0 0% 100%;
+    --primary: 262 90% 59%;
+    --primary-foreground: 0 0% 100%;
+    --primary-light: 264 50% 15%;
+    --secondary: 255 45% 12%;
+    --secondary-foreground: 0 0% 100%;
+    --muted: 264 48% 10%;
+    --muted-foreground: 218 11% 65%;
+    --accent: 271 91% 65%;
     --accent-foreground: 0 0% 100%;
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
-    --border: 220 13% 91%;
-    --input: 220 13% 91%;
-    --ring: 239 84% 67%;
-    --radius: 0.625rem;
-  }
-  .dark {
-    --background: 222 47% 7%;
-    --foreground: 210 40% 98%;
-    --card: 222 47% 10%;
-    --card-foreground: 210 40% 98%;
-    --popover: 222 47% 10%;
-    --popover-foreground: 210 40% 98%;
-    --primary: 239 84% 67%;
-    --primary-foreground: 0 0% 100%;
-    --secondary: 262 83% 68%;
-    --secondary-foreground: 0 0% 100%;
-    --muted: 217 33% 17%;
-    --muted-foreground: 215 20% 65%;
-    --accent: 239 84% 67%;
-    --accent-foreground: 0 0% 100%;
-    --destructive: 0 63% 31%;
-    --destructive-foreground: 0 0% 100%;
-    --border: 215 28% 17%;
-    --input: 215 28% 17%;
-    --ring: 239 84% 67%;
+    --border: 262 29% 20%;
+    --border-hover: 262 29% 28%;
+    --input: 262 29% 20%;
+    --ring: 262 90% 59%;
+    --radius: 0.5rem;
+    --sidebar: 264 48% 10%;
+    --success: 160 84% 39%;
+    --warning: 38 92% 50%;
+    --error: 0 84% 60%;
+    --info: 217 91% 60%;
+    --shadow-card: 0 4px 6px -1px rgba(0,0,0,0.2), 0 2px 4px -1px rgba(0,0,0,0.1);
+    --shadow-hover: 0 10px 15px -3px rgba(0,0,0,0.3);
+    --shadow-dropdown: 0 20px 25px -5px rgba(0,0,0,0.4);
+    --shadow-modal: 0 25px 50px -12px rgba(0,0,0,0.5);
   }
 }
 
@@ -52,14 +110,43 @@
   * {
     @apply border-border;
   }
-  body {
-    @apply bg-background text-foreground;
-    font-family: Arial, Helvetica, sans-serif;
-  }
-}
 
-@layer utilities {
+  html {
+    /* Force dark class so shadcn/ui components always resolve to dark palette */
+    @apply dark;
+  }
+
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+  }
+
+  /* ── Text balance utility ── */
   .text-balance {
     text-wrap: balance;
   }
+}
+
+/* ── Custom scrollbar ── */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: hsl(var(--background));
+}
+
+::-webkit-scrollbar-thumb {
+  background: hsl(var(--border));
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: hsl(var(--border-hover));
+}
+
+/* ── Selection color ── */
+::selection {
+  background: hsl(var(--primary) / 0.3);
+  color: hsl(var(--foreground));
 }

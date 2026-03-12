@@ -32,17 +32,17 @@ export default function VendeurDashboardPage() {
       </h1>
 
       <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
-        <div className="bg-white rounded-lg border p-4">
-          <p className="text-2xl font-bold">{active.length}</p>
-          <p className="text-sm text-muted-foreground">Missions actives</p>
+        <div className="bg-card border border-border rounded-xl shadow-card p-4">
+          <p className="text-2xl font-bold text-primary">{active.length}</p>
+          <p className="text-sm text-foreground-secondary">Missions actives</p>
         </div>
-        <div className="bg-white rounded-lg border p-4">
-          <p className="text-2xl font-bold">{upcoming.length}</p>
-          <p className="text-sm text-muted-foreground">Prochains lives</p>
+        <div className="bg-card border border-border rounded-xl shadow-card p-4">
+          <p className="text-2xl font-bold text-primary">{upcoming.length}</p>
+          <p className="text-sm text-foreground-secondary">Prochains lives</p>
         </div>
-        <div className="bg-white rounded-lg border p-4">
-          <p className="text-2xl font-bold">{missions.filter((m) => m.status === 'completed').length}</p>
-          <p className="text-sm text-muted-foreground">Missions terminées</p>
+        <div className="bg-card border border-border rounded-xl shadow-card p-4">
+          <p className="text-2xl font-bold text-primary">{missions.filter((m) => m.status === 'completed').length}</p>
+          <p className="text-sm text-foreground-secondary">Missions terminées</p>
         </div>
       </div>
 

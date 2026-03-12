@@ -16,9 +16,9 @@ const LEVEL_LABELS: Record<VendeurPublicItem['level'], string> = {
 };
 
 const LEVEL_COLORS: Record<VendeurPublicItem['level'], string> = {
-  debutant: 'bg-blue-100 text-blue-800',
-  confirme: 'bg-purple-100 text-purple-800',
-  star: 'bg-yellow-100 text-yellow-800',
+  debutant: 'bg-blue-500/15 text-blue-300 border border-blue-500/20',
+  confirme: 'bg-primary/15 text-primary border border-primary/20',
+  star: 'bg-yellow-500/15 text-yellow-300 border border-yellow-500/20',
 };
 
 interface VendeurCardProps {
@@ -44,10 +44,10 @@ export function VendeurCard({ vendeur, index = 0 }: VendeurCardProps) {
       whileHover={{ y: -3, transition: { duration: 0.15 } }}
       className="flex flex-col h-full"
     >
-    <Card className="relative flex flex-col h-full hover:shadow-lg transition-shadow duration-200">
+    <Card className="relative flex flex-col h-full bg-card border border-border rounded-xl shadow-card hover:shadow-hover hover:border-primary/30 transition-all duration-200">
       {/* Star badge overlay */}
       {vendeur.isStar && (
-        <span className="absolute top-3 right-3 z-10 bg-yellow-400 text-white text-xs font-bold px-2 py-0.5 rounded-full flex items-center gap-1">
+        <span className="absolute top-3 right-3 z-10 bg-yellow-500/20 text-yellow-300 border border-yellow-500/30 text-xs font-bold px-2 py-0.5 rounded-full flex items-center gap-1">
           ⭐ STAR
         </span>
       )}
@@ -61,10 +61,10 @@ export function VendeurCard({ vendeur, index = 0 }: VendeurCardProps) {
               alt={`${vendeur.firstName} ${vendeur.lastNameInitial}.`}
               width={64}
               height={64}
-              className="rounded-full object-cover"
+              className="rounded-full object-cover ring-2 ring-primary/20"
             />
           ) : (
-            <div className="w-16 h-16 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-700 font-bold text-xl">
+            <div className="w-16 h-16 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center text-primary font-bold text-xl">
               {initials.toUpperCase()}
             </div>
           )}
@@ -72,7 +72,7 @@ export function VendeurCard({ vendeur, index = 0 }: VendeurCardProps) {
 
         {/* Nom */}
         <div className="text-center">
-          <p className="font-semibold text-gray-900 text-base">
+          <p className="font-semibold text-foreground text-base">
             {vendeur.firstName} {vendeur.lastNameInitial}.
           </p>
         </div>
@@ -87,9 +87,9 @@ export function VendeurCard({ vendeur, index = 0 }: VendeurCardProps) {
         {/* Note + missions */}
         <div className="flex items-center gap-2">
           <StarRating rating={vendeur.ratingAvg} size="sm" />
-          <span className="text-sm text-gray-600">
+          <span className="text-sm text-foreground-secondary">
             {vendeur.ratingAvg.toFixed(1)}{' '}
-            <span className="text-gray-400">({vendeur.missionsCount} missions)</span>
+            <span className="text-foreground-secondary/60">({vendeur.missionsCount} missions)</span>
           </span>
         </div>
 
@@ -97,12 +97,12 @@ export function VendeurCard({ vendeur, index = 0 }: VendeurCardProps) {
         {vendeur.zones.length > 0 && (
           <div className="flex flex-wrap justify-center gap-1">
             {displayedZones.map((zone) => (
-              <Badge key={zone} variant="outline" className="text-xs">
+              <Badge key={zone} variant="outline" className="text-xs border-border text-foreground-secondary">
                 {zone}
               </Badge>
             ))}
             {extraZones > 0 && (
-              <Badge variant="outline" className="text-xs text-gray-500">
+              <Badge variant="outline" className="text-xs border-border text-foreground-secondary/60">
                 +{extraZones}
               </Badge>
             )}
@@ -113,12 +113,12 @@ export function VendeurCard({ vendeur, index = 0 }: VendeurCardProps) {
         {vendeur.categories.length > 0 && (
           <div className="flex flex-wrap justify-center gap-1">
             {displayedCategories.map((cat) => (
-              <Badge key={cat} className="text-xs bg-indigo-50 text-indigo-700 hover:bg-indigo-100">
+              <Badge key={cat} className="text-xs bg-primary/10 text-primary hover:bg-primary/20 border border-primary/20">
                 {cat}
               </Badge>
             ))}
             {extraCategories > 0 && (
-              <Badge className="text-xs bg-gray-100 text-gray-600">
+              <Badge className="text-xs bg-muted text-foreground-secondary">
                 +{extraCategories}
               </Badge>
             )}
@@ -127,7 +127,10 @@ export function VendeurCard({ vendeur, index = 0 }: VendeurCardProps) {
       </CardContent>
 
       <CardFooter className="pt-0 pb-4 px-4">
-        <Button asChild className="w-full" variant="default">
+        <Button
+          asChild
+          className="w-full bg-primary hover:bg-primary/90 text-white rounded-lg font-medium transition-colors"
+        >
           <Link href={`/vendeurs/${vendeur.id}`}>Voir le profil</Link>
         </Button>
       </CardFooter>

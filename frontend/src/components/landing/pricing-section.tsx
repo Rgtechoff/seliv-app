@@ -54,13 +54,13 @@ const PLANS: PricingPlan[] = [
 
 export function PricingSection() {
   return (
-    <section id="pricing" className="py-20 bg-gray-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <section id="pricing" className="py-16 md:py-24 bg-background">
+      <div className="max-w-6xl mx-auto px-4">
         <div className="text-center mb-12">
-          <h2 className="text-3xl sm:text-4xl font-bold text-gray-900">
+          <h2 className="text-3xl sm:text-4xl font-bold text-foreground">
             Des tarifs transparents
           </h2>
-          <p className="mt-4 text-lg text-gray-600 max-w-2xl mx-auto">
+          <p className="mt-4 text-lg text-foreground-secondary max-w-2xl mx-auto">
             Choisissez le plan qui correspond à vos ambitions. Sans engagement, sans surprise.
           </p>
         </div>
@@ -77,24 +77,24 @@ export function PricingSection() {
             <Card
               className={
                 plan.popular
-                  ? 'border-2 border-indigo-600 shadow-xl relative'
-                  : 'border-2 border-gray-200 shadow-sm'
+                  ? 'bg-card border-2 border-primary shadow-modal relative rounded-xl'
+                  : 'bg-card border-2 border-border shadow-card rounded-xl'
               }
             >
               {plan.popular && (
                 <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                  <Badge className="bg-indigo-600 text-white hover:bg-indigo-600 border-0 px-4 py-1 text-sm">
+                  <Badge className="bg-primary text-white hover:bg-primary border-0 px-4 py-1 text-sm">
                     Populaire
                   </Badge>
                 </div>
               )}
 
               <CardHeader className="pt-8 pb-4 px-6">
-                <CardTitle className="text-2xl font-bold text-gray-900">{plan.name}</CardTitle>
-                <CardDescription className="text-gray-500 mt-1">{plan.description}</CardDescription>
+                <CardTitle className="text-2xl font-bold text-foreground">{plan.name}</CardTitle>
+                <CardDescription className="text-foreground-secondary mt-1">{plan.description}</CardDescription>
                 <div className="mt-4 flex items-baseline gap-1">
-                  <span className="text-5xl font-extrabold text-gray-900">{plan.price}</span>
-                  <span className="text-gray-500 text-lg">{plan.period}</span>
+                  <span className="text-5xl font-extrabold text-foreground">{plan.price}</span>
+                  <span className="text-foreground-secondary text-lg">{plan.period}</span>
                 </div>
               </CardHeader>
 
@@ -104,19 +104,19 @@ export function PricingSection() {
                     <li key={feature.text} className="flex items-center gap-3">
                       <Check
                         className={`w-5 h-5 flex-shrink-0 ${
-                          plan.popular ? 'text-indigo-600' : 'text-green-500'
+                          plan.popular ? 'text-primary' : 'text-success'
                         }`}
                       />
-                      <span className="text-sm text-gray-700">{feature.text}</span>
+                      <span className="text-sm text-foreground-secondary">{feature.text}</span>
                     </li>
                   ))}
                 </ul>
 
                 <Button
-                  className={`w-full ${
+                  className={`w-full rounded-lg font-medium transition-colors ${
                     plan.popular
-                      ? 'bg-indigo-600 hover:bg-indigo-700 text-white'
-                      : ''
+                      ? 'bg-primary hover:bg-primary/90 text-white'
+                      : 'border-border text-foreground hover:bg-primary/10 hover:border-primary/50'
                   }`}
                   variant={plan.popular ? 'default' : 'outline'}
                   asChild

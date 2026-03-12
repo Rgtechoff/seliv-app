@@ -3,19 +3,15 @@
 import { useEffect, useState } from 'react';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
-import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { StatusBadge } from '@/components/status-badge';
 import { formatPrice, type Mission } from '@/lib/types';
 import { adminApi } from '@/lib/api';
 import {
-  Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
-} from '@/components/ui/table';
-import {
   Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle,
 } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
+import { Search, Download, UserPlus } from 'lucide-react';
 
 export default function AdminMissionsPage() {
   const [missions, setMissions] = useState<Mission[]>([]);
@@ -73,84 +69,123 @@ export default function AdminMissionsPage() {
   };
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
+      {/* Header */}
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">Missions ({missions.length})</h1>
-        <Button variant="outline" onClick={exportCSV}>
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight text-foreground">Missions ({missions.length})</h1>
+          <p className="text-foreground-secondary text-sm mt-1">Gérez toutes les missions de la plateforme</p>
+        </div>
+        <button
+          onClick={exportCSV}
+          className="flex items-center gap-2 border border-border rounded-lg px-3 py-2 text-sm text-foreground hover:bg-primary-light transition-colors"
+        >
+          <Download className="w-4 h-4" />
           Exporter CSV
-        </Button>
+        </button>
       </div>
 
-      <Input
-        placeholder="Rechercher par ville, catégorie, statut…"
-        value={search}
-        onChange={(e) => setSearch(e.target.value)}
-        className="max-w-sm"
-      />
+      {/* Search */}
+      <div className="relative max-w-sm">
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-foreground-secondary" />
+        <input
+          placeholder="Rechercher par ville, catégorie, statut…"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          className="w-full pl-9 pr-3 py-2 bg-card border border-border rounded-lg text-sm text-foreground placeholder:text-foreground-secondary focus:outline-none focus:border-primary transition-colors"
+        />
+      </div>
 
-      <Card>
-        <CardContent className="p-0">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Date</TableHead>
-                <TableHead>Ville</TableHead>
-                <TableHead>Catégorie</TableHead>
-                <TableHead>Prix</TableHead>
-                <TableHead>Statut</TableHead>
-                <TableHead>Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
+      {/* Table */}
+      <div className="bg-card border border-border rounded-xl overflow-hidden shadow-card">
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead className="bg-sidebar">
+              <tr>
+                <th className="text-left px-4 py-3 text-xs font-medium uppercase tracking-wide text-foreground-secondary">Date</th>
+                <th className="text-left px-4 py-3 text-xs font-medium uppercase tracking-wide text-foreground-secondary">Ville</th>
+                <th className="text-left px-4 py-3 text-xs font-medium uppercase tracking-wide text-foreground-secondary">Catégorie</th>
+                <th className="text-left px-4 py-3 text-xs font-medium uppercase tracking-wide text-foreground-secondary">Prix</th>
+                <th className="text-left px-4 py-3 text-xs font-medium uppercase tracking-wide text-foreground-secondary">Statut</th>
+                <th className="text-left px-4 py-3 text-xs font-medium uppercase tracking-wide text-foreground-secondary">Actions</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-border">
               {loading ? (
-                <TableRow>
-                  <TableCell colSpan={6} className="text-center text-muted-foreground">
+                <tr>
+                  <td colSpan={6} className="text-center px-4 py-8 text-foreground-secondary">
                     Chargement…
-                  </TableCell>
-                </TableRow>
+                  </td>
+                </tr>
+              ) : filtered.length === 0 ? (
+                <tr>
+                  <td colSpan={6} className="text-center px-4 py-8 text-foreground-secondary">
+                    Aucune mission trouvée.
+                  </td>
+                </tr>
               ) : filtered.map((m) => (
-                <TableRow key={m.id}>
-                  <TableCell>
+                <tr key={m.id} className="border-b border-border hover:bg-primary-light/50 transition-colors">
+                  <td className="px-4 py-3 text-foreground-secondary">
                     {format(new Date(m.date), 'dd/MM/yy', { locale: fr })}
-                  </TableCell>
-                  <TableCell>{m.city}</TableCell>
-                  <TableCell className="capitalize">{m.category}</TableCell>
-                  <TableCell>{formatPrice(m.totalPrice)}</TableCell>
-                  <TableCell><StatusBadge status={m.status} /></TableCell>
-                  <TableCell>
-                    {m.status === 'paid' && (
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => { setSelectedMission(m); setAssignOpen(true); }}
-                      >
-                        Assigner
-                      </Button>
-                    )}
-                  </TableCell>
-                </TableRow>
+                  </td>
+                  <td className="px-4 py-3 text-foreground">{m.city}</td>
+                  <td className="px-4 py-3 capitalize text-foreground">{m.category}</td>
+                  <td className="px-4 py-3 font-medium text-foreground">{formatPrice(m.totalPrice)}</td>
+                  <td className="px-4 py-3">
+                    <StatusBadge status={m.status} />
+                  </td>
+                  <td className="px-4 py-3">
+                    <div className="flex items-center gap-1">
+                      {m.status === 'paid' && (
+                        <button
+                          onClick={() => { setSelectedMission(m); setAssignOpen(true); }}
+                          className="flex items-center gap-1.5 border border-border rounded-lg px-2 py-1 text-xs text-foreground hover:bg-primary-light transition-colors"
+                        >
+                          <UserPlus className="w-3 h-3" />
+                          Assigner
+                        </button>
+                      )}
+                    </div>
+                  </td>
+                </tr>
               ))}
-            </TableBody>
-          </Table>
-        </CardContent>
-      </Card>
+            </tbody>
+          </table>
+        </div>
+        {!loading && (
+          <div className="px-4 py-3 border-t border-border text-xs text-foreground-secondary">
+            {filtered.length} / {missions.length} missions
+          </div>
+        )}
+      </div>
 
+      {/* Modal assign vendeur */}
       <Dialog open={assignOpen} onOpenChange={setAssignOpen}>
-        <DialogContent>
+        <DialogContent className="bg-card border border-border rounded-xl shadow-modal">
           <DialogHeader>
-            <DialogTitle>Assigner un vendeur</DialogTitle>
+            <DialogTitle className="text-foreground">Assigner un vendeur</DialogTitle>
           </DialogHeader>
           <div className="space-y-1">
-            <Label>ID du vendeur</Label>
-            <Input
+            <Label className="text-sm text-foreground-secondary">ID du vendeur</Label>
+            <input
               value={vendeurId}
               onChange={(e) => setVendeurId(e.target.value)}
               placeholder="UUID du vendeur"
+              className="w-full px-3 py-2 bg-background border border-border rounded-lg text-sm text-foreground placeholder:text-foreground-secondary focus:outline-none focus:border-primary font-mono"
             />
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setAssignOpen(false)}>Annuler</Button>
-            <Button disabled={assigning || !vendeurId.trim()} onClick={handleAssign}>
+            <button
+              onClick={() => setAssignOpen(false)}
+              className="border border-border bg-transparent hover:bg-primary-light text-foreground rounded-lg px-4 py-2 text-sm transition-colors"
+            >
+              Annuler
+            </button>
+            <Button
+              disabled={assigning || !vendeurId.trim()}
+              onClick={handleAssign}
+              className="bg-primary hover:bg-primary/90 text-foreground font-semibold rounded-lg"
+            >
               {assigning ? 'Assignation…' : 'Assigner'}
             </Button>
           </DialogFooter>

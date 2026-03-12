@@ -1,15 +1,11 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Card, CardContent } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
 import { adminApi } from '@/lib/api';
 import { formatPrice, type Mission } from '@/lib/types';
-import {
-  Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
-} from '@/components/ui/table';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
+import { Download, TrendingUp, RotateCcw } from 'lucide-react';
 
 export default function AdminFacturationPage() {
   const [missions, setMissions] = useState<Mission[]>([]);
@@ -41,66 +37,107 @@ export default function AdminFacturationPage() {
 
   return (
     <div className="space-y-6">
+      {/* Header */}
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">Facturation</h1>
-        <Button variant="outline" onClick={exportCSV}>Exporter CSV</Button>
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight text-foreground">Facturation</h1>
+          <p className="text-foreground-secondary text-sm mt-1">Suivi des transactions et remboursements</p>
+        </div>
+        <button
+          onClick={exportCSV}
+          className="flex items-center gap-2 border border-border rounded-lg px-3 py-2 text-sm text-foreground hover:bg-primary-light transition-colors"
+        >
+          <Download className="w-4 h-4" />
+          Exporter CSV
+        </button>
       </div>
 
+      {/* KPI mini-cards */}
       <div className="grid grid-cols-2 gap-4">
-        <Card>
-          <CardContent className="pt-6">
-            <p className="text-3xl font-bold">{formatPrice(totalRevenue)}</p>
-            <p className="text-sm text-muted-foreground">CA total</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="pt-6">
-            <p className="text-3xl font-bold">{formatPrice(totalRefunds)}</p>
-            <p className="text-sm text-muted-foreground">Remboursements</p>
-          </CardContent>
-        </Card>
+        <div className="bg-card border border-border rounded-xl p-6 shadow-card">
+          <div className="flex items-start justify-between">
+            <div>
+              <p className="text-sm text-foreground-secondary">CA total</p>
+              <p className="text-3xl font-bold text-foreground mt-2">{formatPrice(totalRevenue)}</p>
+            </div>
+            <div className="w-10 h-10 rounded-xl bg-success/20 flex items-center justify-center">
+              <TrendingUp className="w-5 h-5 text-success" />
+            </div>
+          </div>
+        </div>
+        <div className="bg-card border border-border rounded-xl p-6 shadow-card">
+          <div className="flex items-start justify-between">
+            <div>
+              <p className="text-sm text-foreground-secondary">Remboursements</p>
+              <p className="text-3xl font-bold text-error mt-2">{formatPrice(totalRefunds)}</p>
+            </div>
+            <div className="w-10 h-10 rounded-xl bg-error/20 flex items-center justify-center">
+              <RotateCcw className="w-5 h-5 text-error" />
+            </div>
+          </div>
+        </div>
       </div>
 
-      <Card>
-        <CardContent className="p-0">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Date paiement</TableHead>
-                <TableHead>Date live</TableHead>
-                <TableHead>Ville</TableHead>
-                <TableHead>Catégorie</TableHead>
-                <TableHead>Montant</TableHead>
-                <TableHead>Statut</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
+      {/* Table */}
+      <div className="bg-card border border-border rounded-xl overflow-hidden shadow-card">
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead className="bg-sidebar">
+              <tr>
+                <th className="text-left px-4 py-3 text-xs font-medium uppercase tracking-wide text-foreground-secondary">Date paiement</th>
+                <th className="text-left px-4 py-3 text-xs font-medium uppercase tracking-wide text-foreground-secondary">Date live</th>
+                <th className="text-left px-4 py-3 text-xs font-medium uppercase tracking-wide text-foreground-secondary">Ville</th>
+                <th className="text-left px-4 py-3 text-xs font-medium uppercase tracking-wide text-foreground-secondary">Catégorie</th>
+                <th className="text-left px-4 py-3 text-xs font-medium uppercase tracking-wide text-foreground-secondary">Montant</th>
+                <th className="text-left px-4 py-3 text-xs font-medium uppercase tracking-wide text-foreground-secondary">Statut</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-border">
               {loading ? (
-                <TableRow>
-                  <TableCell colSpan={6} className="text-center text-muted-foreground">Chargement…</TableCell>
-                </TableRow>
+                <tr>
+                  <td colSpan={6} className="text-center px-4 py-8 text-foreground-secondary">Chargement…</td>
+                </tr>
+              ) : missions.length === 0 ? (
+                <tr>
+                  <td colSpan={6} className="text-center px-4 py-8 text-foreground-secondary">Aucune transaction.</td>
+                </tr>
               ) : missions.map((m) => (
-                <TableRow key={m.id}>
-                  <TableCell>
+                <tr key={m.id} className="border-b border-border hover:bg-primary-light/50 transition-colors">
+                  <td className="px-4 py-3 text-foreground-secondary">
                     {m.paidAt ? format(new Date(m.paidAt), 'dd/MM/yy', { locale: fr }) : '—'}
-                  </TableCell>
-                  <TableCell>
+                  </td>
+                  <td className="px-4 py-3 text-foreground-secondary">
                     {format(new Date(m.date), 'dd/MM/yy', { locale: fr })}
-                  </TableCell>
-                  <TableCell>{m.city}</TableCell>
-                  <TableCell className="capitalize">{m.category}</TableCell>
-                  <TableCell className="font-medium">{formatPrice(m.totalPrice)}</TableCell>
-                  <TableCell>
-                    <span className={m.status === 'cancelled' ? 'text-destructive' : 'text-green-600'}>
-                      {m.status === 'cancelled' ? 'Remboursé' : 'Payé'}
+                  </td>
+                  <td className="px-4 py-3 text-foreground">{m.city}</td>
+                  <td className="px-4 py-3 capitalize text-foreground">{m.category}</td>
+                  <td className="px-4 py-3">
+                    <span className={`font-semibold ${m.status === 'cancelled' ? 'text-error' : 'text-success'}`}>
+                      {formatPrice(m.totalPrice)}
                     </span>
-                  </TableCell>
-                </TableRow>
+                  </td>
+                  <td className="px-4 py-3">
+                    {m.status === 'cancelled' ? (
+                      <span className="bg-error/20 text-error border border-error/30 rounded text-xs px-2 py-0.5">
+                        Remboursé
+                      </span>
+                    ) : (
+                      <span className="bg-success/20 text-success border border-success/30 rounded text-xs px-2 py-0.5">
+                        Payé
+                      </span>
+                    )}
+                  </td>
+                </tr>
               ))}
-            </TableBody>
-          </Table>
-        </CardContent>
-      </Card>
+            </tbody>
+          </table>
+        </div>
+        {!loading && (
+          <div className="px-4 py-3 border-t border-border text-xs text-foreground-secondary">
+            {missions.length} transactions
+          </div>
+        )}
+      </div>
     </div>
   );
 }

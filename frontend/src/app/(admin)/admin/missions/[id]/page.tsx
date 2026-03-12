@@ -6,8 +6,6 @@ import { adminApi, missionsApi } from '@/lib/api';
 import { useToast } from '@/components/ui/toast';
 import { useAuth } from '@/lib/hooks/use-auth';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { StatusBadge } from '@/components/status-badge';
 import { PriceBreakdown } from '@/components/price-breakdown';
 import { ChatWidget } from '@/components/chat-widget';
@@ -18,11 +16,10 @@ import {
   DialogTitle,
   DialogFooter,
 } from '@/components/ui/dialog';
-import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import type { Mission } from '@/lib/types';
 import { formatPrice } from '@/lib/types';
-import { ArrowLeft, User, Calendar, MapPin, Package } from 'lucide-react';
+import { ArrowLeft, User, Calendar, MapPin, Package, AlertTriangle } from 'lucide-react';
 
 export default function AdminMissionDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -74,7 +71,7 @@ export default function AdminMissionDetailPage() {
 
   if (!mission) {
     return (
-      <div className="text-center py-12 text-muted-foreground">
+      <div className="text-center py-12 text-foreground-secondary">
         Mission introuvable.
       </div>
     );
@@ -82,15 +79,19 @@ export default function AdminMissionDetailPage() {
 
   return (
     <div className="space-y-6">
+      {/* Header */}
       <div className="flex items-center gap-4">
-        <Button variant="ghost" size="sm" onClick={() => router.back()}>
-          <ArrowLeft className="h-4 w-4 mr-1" /> Retour
-        </Button>
+        <button
+          onClick={() => router.back()}
+          className="flex items-center gap-1.5 text-sm text-foreground-secondary hover:text-foreground transition-colors"
+        >
+          <ArrowLeft className="h-4 w-4" /> Retour
+        </button>
         <div className="flex-1">
-          <h1 className="text-2xl font-bold">
+          <h1 className="text-2xl font-bold tracking-tight text-foreground">
             Mission — {mission.category}
           </h1>
-          <p className="text-sm text-muted-foreground">ID : {mission.id}</p>
+          <p className="text-xs text-foreground-secondary font-mono mt-0.5">{mission.id}</p>
         </div>
         <StatusBadge status={mission.status} />
       </div>
@@ -98,16 +99,19 @@ export default function AdminMissionDetailPage() {
       <div className="grid gap-6 lg:grid-cols-3">
         {/* Main info */}
         <div className="lg:col-span-2 space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle>Informations générales</CardTitle>
-            </CardHeader>
-            <CardContent className="grid grid-cols-2 gap-4 text-sm">
+          {/* Informations générales */}
+          <div className="bg-card border border-border rounded-xl shadow-card">
+            <div className="px-6 py-4 border-b border-border">
+              <h2 className="font-semibold text-foreground">Informations générales</h2>
+            </div>
+            <div className="p-6 grid grid-cols-2 gap-4 text-sm">
               <div className="flex items-center gap-2">
-                <Calendar className="h-4 w-4 text-muted-foreground" />
+                <div className="w-8 h-8 rounded-lg bg-info/20 flex items-center justify-center flex-shrink-0">
+                  <Calendar className="h-4 w-4 text-info" />
+                </div>
                 <div>
-                  <p className="font-medium">Date du live</p>
-                  <p className="text-muted-foreground">
+                  <p className="font-medium text-foreground">Date du live</p>
+                  <p className="text-foreground-secondary text-xs">
                     {new Date(mission.date).toLocaleDateString('fr-FR', {
                       weekday: 'long',
                       year: 'numeric',
@@ -119,115 +123,123 @@ export default function AdminMissionDetailPage() {
                 </div>
               </div>
               <div className="flex items-center gap-2">
-                <Package className="h-4 w-4 text-muted-foreground" />
+                <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
+                  <Package className="h-4 w-4 text-primary" />
+                </div>
                 <div>
-                  <p className="font-medium">Volume / Durée</p>
-                  <p className="text-muted-foreground">
+                  <p className="font-medium text-foreground">Volume / Durée</p>
+                  <p className="text-foreground-secondary text-xs">
                     {mission.volume} articles — {mission.durationHours}h
                   </p>
                 </div>
               </div>
               <div className="flex items-center gap-2 col-span-2">
-                <MapPin className="h-4 w-4 text-muted-foreground" />
+                <div className="w-8 h-8 rounded-lg bg-warning/20 flex items-center justify-center flex-shrink-0">
+                  <MapPin className="h-4 w-4 text-warning" />
+                </div>
                 <div>
-                  <p className="font-medium">Adresse</p>
-                  <p className="text-muted-foreground">
+                  <p className="font-medium text-foreground">Adresse</p>
+                  <p className="text-foreground-secondary text-xs">
                     {mission.address}, {mission.city}
                   </p>
                 </div>
               </div>
-            </CardContent>
-          </Card>
+            </div>
+          </div>
 
-          {/* Client info */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <User className="h-4 w-4" /> Client
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="text-sm space-y-1">
+          {/* Client */}
+          <div className="bg-card border border-border rounded-xl shadow-card">
+            <div className="px-6 py-4 border-b border-border flex items-center gap-2">
+              <User className="h-4 w-4 text-foreground-secondary" />
+              <h2 className="font-semibold text-foreground">Client</h2>
+            </div>
+            <div className="p-6 text-sm">
               {mission.client ? (
                 <>
-                  <p className="font-medium">
+                  <p className="font-medium text-foreground">
                     {mission.client.firstName} {mission.client.lastName}
                   </p>
                   {mission.client.companyName && (
-                    <p className="text-muted-foreground">{mission.client.companyName}</p>
+                    <p className="text-foreground-secondary mt-0.5">{mission.client.companyName}</p>
                   )}
-                  <p className="text-muted-foreground font-mono text-xs">{mission.clientId}</p>
+                  <p className="text-foreground-secondary font-mono text-xs mt-1">{mission.clientId}</p>
                 </>
               ) : (
-                <p className="font-mono text-xs text-muted-foreground">{mission.clientId}</p>
+                <p className="font-mono text-xs text-foreground-secondary">{mission.clientId}</p>
               )}
-            </CardContent>
-          </Card>
+            </div>
+          </div>
 
-          {/* Vendeur info + assign */}
-          <Card>
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <CardTitle className="flex items-center gap-2">
-                  <User className="h-4 w-4" /> Vendeur
-                </CardTitle>
-                {(mission.status === 'paid' || mission.status === 'assigned') && (
-                  <Button size="sm" onClick={() => setAssignOpen(true)}>
-                    {mission.vendeurId ? 'Réassigner' : 'Assigner un vendeur'}
-                  </Button>
-                )}
+          {/* Vendeur */}
+          <div className="bg-card border border-border rounded-xl shadow-card">
+            <div className="px-6 py-4 border-b border-border flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <User className="h-4 w-4 text-foreground-secondary" />
+                <h2 className="font-semibold text-foreground">Vendeur</h2>
               </div>
-            </CardHeader>
-            <CardContent className="text-sm">
+              {(mission.status === 'paid' || mission.status === 'assigned') && (
+                <button
+                  onClick={() => setAssignOpen(true)}
+                  className="flex items-center gap-1.5 bg-primary hover:bg-primary/90 text-foreground font-semibold rounded-lg px-3 py-1.5 text-xs transition-colors"
+                >
+                  {mission.vendeurId ? 'Réassigner' : 'Assigner un vendeur'}
+                </button>
+              )}
+            </div>
+            <div className="p-6 text-sm">
               {mission.vendeurId ? (
                 <>
                   {mission.vendeur ? (
                     <>
-                      <p className="font-medium">
+                      <p className="font-medium text-foreground">
                         {mission.vendeur.firstName} {mission.vendeur.lastName}
                       </p>
                       {mission.vendeur.level && (
-                        <Badge variant="outline" className="mt-1">
+                        <span className="mt-1 inline-block bg-info/20 text-info border border-info/30 rounded text-xs px-2 py-0.5">
                           {mission.vendeur.level}
-                        </Badge>
+                        </span>
                       )}
                     </>
                   ) : (
-                    <p className="font-mono text-xs text-muted-foreground">{mission.vendeurId}</p>
+                    <p className="font-mono text-xs text-foreground-secondary">{mission.vendeurId}</p>
                   )}
                 </>
               ) : (
-                <p className="text-muted-foreground">Aucun vendeur assigné</p>
+                <p className="text-foreground-secondary">Aucun vendeur assigné</p>
               )}
-            </CardContent>
-          </Card>
+            </div>
+          </div>
 
-          {/* Cancellation info */}
+          {/* Annulation */}
           {mission.status === 'cancelled' && (
-            <Card className="border-destructive">
-              <CardHeader>
-                <CardTitle className="text-destructive">Annulation</CardTitle>
-              </CardHeader>
-              <CardContent className="text-sm space-y-1">
+            <div className="bg-card border border-error/30 border-l-4 border-l-error rounded-xl shadow-card">
+              <div className="px-6 py-4 border-b border-border flex items-center gap-2">
+                <AlertTriangle className="h-4 w-4 text-error" />
+                <h2 className="font-semibold text-error">Annulation</h2>
+              </div>
+              <div className="p-6 text-sm space-y-1">
                 {mission.cancelledAt && (
-                  <p>
-                    <span className="font-medium">Date : </span>
+                  <p className="text-foreground-secondary">
+                    <span className="font-medium text-foreground">Date : </span>
                     {new Date(mission.cancelledAt).toLocaleString('fr-FR')}
                   </p>
                 )}
                 {mission.cancellationReason && (
-                  <p>
-                    <span className="font-medium">Raison : </span>
+                  <p className="text-foreground-secondary">
+                    <span className="font-medium text-foreground">Raison : </span>
                     {mission.cancellationReason}
                   </p>
                 )}
                 {(mission as Mission & { refundAmount?: number }).refundAmount !== undefined && (
-                  <p>
-                    <span className="font-medium">Remboursement : </span>
-                    {formatPrice((mission as Mission & { refundAmount?: number }).refundAmount ?? 0)}
+                  <p className="text-foreground-secondary">
+                    <span className="font-medium text-foreground">Remboursement : </span>
+                    <span className="text-success font-medium">
+                      {formatPrice((mission as Mission & { refundAmount?: number }).refundAmount ?? 0)}
+                    </span>
                   </p>
                 )}
-              </CardContent>
-            </Card>
+              </div>
+            </div>
           )}
         </div>
 
@@ -240,48 +252,65 @@ export default function AdminMissionDetailPage() {
             totalPrice={mission.totalPrice}
           />
 
-          <Card>
-            <CardHeader>
-              <CardTitle>Dates</CardTitle>
-            </CardHeader>
-            <CardContent className="text-xs text-muted-foreground space-y-1">
-              <p>Créée : {new Date(mission.createdAt).toLocaleString('fr-FR')}</p>
+          <div className="bg-card border border-border rounded-xl p-5 shadow-card">
+            <h2 className="font-semibold text-foreground mb-3">Dates</h2>
+            <div className="space-y-1.5">
+              <p className="text-xs text-foreground-secondary">
+                <span className="text-foreground font-medium">Créée : </span>
+                {new Date(mission.createdAt).toLocaleString('fr-FR')}
+              </p>
               {mission.paidAt && (
-                <p>Payée : {new Date(mission.paidAt).toLocaleString('fr-FR')}</p>
+                <p className="text-xs text-foreground-secondary">
+                  <span className="text-foreground font-medium">Payée : </span>
+                  {new Date(mission.paidAt).toLocaleString('fr-FR')}
+                </p>
               )}
               {mission.completedAt && (
-                <p>Terminée : {new Date(mission.completedAt).toLocaleString('fr-FR')}</p>
+                <p className="text-xs text-foreground-secondary">
+                  <span className="text-foreground font-medium">Terminée : </span>
+                  {new Date(mission.completedAt).toLocaleString('fr-FR')}
+                </p>
               )}
-            </CardContent>
-          </Card>
+            </div>
+          </div>
         </div>
       </div>
 
-      {/* Chat (admin can view) */}
+      {/* Chat */}
       {user && (mission.status === 'assigned' || mission.status === 'in_progress' || mission.status === 'completed') && (
         <ChatWidget missionId={mission.id} currentUser={user} />
       )}
 
       {/* Assign vendeur dialog */}
       <Dialog open={assignOpen} onOpenChange={setAssignOpen}>
-        <DialogContent>
+        <DialogContent className="bg-card border border-border rounded-xl shadow-modal">
           <DialogHeader>
-            <DialogTitle>Assigner un vendeur</DialogTitle>
+            <DialogTitle className="text-foreground">Assigner un vendeur</DialogTitle>
           </DialogHeader>
           <div className="space-y-3">
-            <Label htmlFor="vendeurId">UUID du vendeur</Label>
-            <Input
+            <Label htmlFor="vendeurId" className="text-sm text-foreground-secondary">
+              UUID du vendeur
+            </Label>
+            <input
               id="vendeurId"
               placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
               value={vendeurId}
               onChange={(e) => setVendeurId(e.target.value)}
+              className="w-full px-3 py-2 bg-background border border-border rounded-lg text-sm font-mono text-foreground placeholder:text-foreground-secondary focus:outline-none focus:border-primary transition-colors"
             />
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setAssignOpen(false)}>
+            <button
+              onClick={() => setAssignOpen(false)}
+              className="border border-border bg-transparent hover:bg-primary-light text-foreground rounded-lg px-4 py-2 text-sm transition-colors"
+            >
               Annuler
-            </Button>
-            <Button onClick={handleAssign} disabled={assigning || !vendeurId.trim()}>
+            </button>
+            <Button
+              onClick={handleAssign}
+              disabled={assigning || !vendeurId.trim()}
+              className="bg-primary hover:bg-primary/90 text-foreground font-semibold rounded-lg"
+            >
               {assigning ? 'Assignation…' : 'Confirmer'}
             </Button>
           </DialogFooter>

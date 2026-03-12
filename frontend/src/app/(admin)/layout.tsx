@@ -14,12 +14,13 @@ import {
   BadgeCheck,
   Menu,
   X,
+  Bell,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '@/lib/hooks/use-auth';
-import { Button } from '@/components/ui/button';
 import { PageTransition } from '@/components/page-transition';
 import { cn } from '@/lib/utils';
+import { ThemeToggle } from '@/components/shared/theme-toggle';
 
 const NAV = [
   { href: '/admin/dashboard', label: 'Dashboard', icon: LayoutDashboard },
@@ -27,7 +28,7 @@ const NAV = [
   { href: '/admin/vendeurs', label: 'Vendeurs', icon: Users },
   { href: '/admin/clients', label: 'Clients', icon: Building },
   { href: '/admin/abonnements', label: 'Abonnements', icon: BadgeCheck },
-  { href: '/admin/chat-moderation', label: 'Modération chat', icon: MessageSquare },
+  { href: '/admin/chat-moderation', label: 'Modération Chat', icon: MessageSquare },
   { href: '/admin/facturation', label: 'Facturation', icon: CreditCard },
 ];
 
@@ -35,48 +36,60 @@ function AdminSidebarContent({
   pathname,
   userRole,
   onLogout,
+  onLinkClick,
 }: {
   pathname: string;
   userRole: string;
   onLogout: () => void;
+  onLinkClick?: () => void;
 }) {
   return (
-    <>
-      <div className="p-4 border-b border-gray-700">
-        <Link href="/admin/dashboard" className="text-xl font-bold">
-          SELIV Admin
+    <div className="flex flex-col h-full">
+      {/* Logo */}
+      <div className="px-4 py-5 border-b border-border">
+        <Link href="/admin/dashboard" onClick={onLinkClick} className="flex items-center gap-2">
+          <span className="text-xl font-black text-foreground">SELIV</span>
+          <span className="bg-primary/20 text-primary text-[10px] font-bold px-1.5 py-0.5 rounded tracking-wide uppercase">
+            Admin
+          </span>
         </Link>
-        <p className="text-xs text-gray-400 mt-0.5 capitalize">{userRole}</p>
+        <p className="text-xs text-foreground-secondary mt-1 capitalize">{userRole}</p>
       </div>
-      <nav className="flex-1 p-3 space-y-1">
-        {NAV.map(({ href, label, icon: Icon }) => (
-          <Link
-            key={href}
-            href={href}
-            className={cn(
-              'flex items-center gap-2 px-3 py-2 rounded-md text-sm transition-colors',
-              pathname === href
-                ? 'bg-white/20 text-white'
-                : 'text-gray-300 hover:bg-white/10 hover:text-white',
-            )}
-          >
-            <Icon className="h-4 w-4" />
-            {label}
-          </Link>
-        ))}
+
+      {/* Nav */}
+      <nav className="flex-1 px-3 py-4 space-y-0.5 overflow-y-auto">
+        {NAV.map(({ href, label, icon: Icon }) => {
+          const isActive = pathname === href || pathname.startsWith(href + '/');
+          return (
+            <Link
+              key={href}
+              href={href}
+              onClick={onLinkClick}
+              className={cn(
+                'flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors',
+                isActive
+                  ? 'bg-primary-light border-l-[3px] border-primary text-foreground font-medium'
+                  : 'text-foreground-secondary hover:text-foreground hover:bg-primary-light',
+              )}
+            >
+              <Icon className={cn('h-4 w-4 flex-shrink-0', isActive ? 'text-primary' : '')} />
+              {label}
+            </Link>
+          );
+        })}
       </nav>
-      <div className="p-3 border-t border-gray-700">
-        <Button
-          variant="ghost"
-          size="sm"
-          className="w-full justify-start text-gray-300 hover:text-white hover:bg-white/10"
+
+      {/* Logout */}
+      <div className="px-3 py-4 border-t border-border">
+        <button
           onClick={onLogout}
+          className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-foreground-secondary hover:text-foreground hover:bg-primary-light w-full transition-colors"
         >
-          <LogOut className="h-4 w-4 mr-2" />
+          <LogOut className="h-4 w-4" />
           Déconnexion
-        </Button>
+        </button>
       </div>
-    </>
+    </div>
   );
 }
 
@@ -86,7 +99,6 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const { user, isLoading, logout } = useAuth();
   const [drawerOpen, setDrawerOpen] = useState(false);
 
-  // Ferme le drawer à chaque changement de route
   useEffect(() => {
     setDrawerOpen(false);
   }, [pathname]);
@@ -100,9 +112,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   if (isLoading || !user) return null;
 
   return (
-    <div className="min-h-screen flex">
-      {/* Sidebar — desktop uniquement */}
-      <aside className="hidden md:flex w-56 bg-gray-900 text-white flex-col shrink-0">
+    <div className="min-h-screen flex bg-background">
+      {/* Sidebar desktop */}
+      <aside className="hidden md:flex w-56 bg-sidebar border-r border-border flex-col shrink-0">
         <AdminSidebarContent pathname={pathname} userRole={user.role} onLogout={logout} />
       </aside>
 
@@ -115,7 +127,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               transition={{ duration: 0.2 }}
-              className="fixed inset-0 z-40 bg-black/50 md:hidden"
+              className="fixed inset-0 z-40 bg-black/60 backdrop-blur-sm md:hidden"
               onClick={() => setDrawerOpen(false)}
             />
             <motion.aside
@@ -123,43 +135,58 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               animate={{ x: 0 }}
               exit={{ x: -224 }}
               transition={{ type: 'spring', stiffness: 400, damping: 40 }}
-              className="fixed top-0 left-0 h-full w-56 z-50 bg-gray-900 text-white flex flex-col md:hidden"
+              className="fixed top-0 left-0 h-full w-56 z-50 bg-sidebar border-r border-border flex flex-col md:hidden"
             >
               <div className="flex justify-end p-2">
                 <button
                   onClick={() => setDrawerOpen(false)}
-                  className="p-1.5 rounded-md text-gray-400 hover:text-white hover:bg-white/10 transition-colors"
+                  className="p-1.5 rounded-md text-foreground-secondary hover:text-foreground hover:bg-primary-light transition-colors"
                   aria-label="Fermer le menu"
                 >
                   <X className="h-5 w-5" />
                 </button>
               </div>
-              <AdminSidebarContent pathname={pathname} userRole={user.role} onLogout={logout} />
+              <AdminSidebarContent
+                pathname={pathname}
+                userRole={user.role}
+                onLogout={logout}
+                onLinkClick={() => setDrawerOpen(false)}
+              />
             </motion.aside>
           </>
         )}
       </AnimatePresence>
 
       <div className="flex-1 flex flex-col min-w-0">
-        {/* Header mobile */}
-        <header className="flex md:hidden h-14 border-b bg-white items-center justify-between px-4 sticky top-0 z-30">
-          <button
-            onClick={() => setDrawerOpen(true)}
-            className="p-2 rounded-md hover:bg-gray-100 transition-colors"
-            aria-label="Ouvrir le menu"
-          >
-            <Menu className="h-5 w-5 text-gray-600" />
-          </button>
-          <span className="text-sm font-semibold text-gray-700">Administration</span>
-          <div className="w-9" />
+        {/* Header */}
+        <header className="h-14 border-b border-border bg-sidebar flex items-center justify-between px-4 shrink-0 sticky top-0 z-30">
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => setDrawerOpen(true)}
+              className="md:hidden p-1.5 rounded-md text-foreground-secondary hover:text-foreground hover:bg-primary-light transition-colors"
+              aria-label="Ouvrir le menu"
+            >
+              <Menu className="h-5 w-5" />
+            </button>
+            <span className="hidden md:block text-sm font-medium text-foreground-secondary">
+              Interface d&apos;administration
+            </span>
+            <span className="md:hidden text-sm font-semibold text-foreground">Administration</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <ThemeToggle />
+            <button className="p-1.5 rounded-md hover:bg-primary-light transition-colors relative">
+              <Bell className="h-4 w-4 text-foreground-secondary" />
+            </button>
+            {user && (
+              <div className="w-7 h-7 rounded-full bg-primary/20 flex items-center justify-center text-primary text-xs font-bold ml-1">
+                {user.firstName?.[0]?.toUpperCase() ?? 'A'}
+              </div>
+            )}
+          </div>
         </header>
 
-        {/* Header desktop */}
-        <header className="hidden md:flex h-14 border-b bg-white items-center px-6 shrink-0">
-          <h1 className="text-sm font-medium text-muted-foreground">Interface d&apos;administration</h1>
-        </header>
-
-        <main className="flex-1 p-4 md:p-6 bg-gray-50 overflow-y-auto">
+        <main className="flex-1 p-4 md:p-6 overflow-y-auto">
           <PageTransition>{children}</PageTransition>
         </main>
       </div>

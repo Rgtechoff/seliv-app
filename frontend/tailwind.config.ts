@@ -16,13 +16,16 @@ const config: Config = {
     extend: {
       colors: {
         border: 'hsl(var(--border))',
+        'border-hover': 'hsl(var(--border-hover))',
         input: 'hsl(var(--input))',
         ring: 'hsl(var(--ring))',
         background: 'hsl(var(--background))',
         foreground: 'hsl(var(--foreground))',
+        'foreground-secondary': 'hsl(var(--foreground-secondary))',
         primary: {
           DEFAULT: 'hsl(var(--primary))',
           foreground: 'hsl(var(--primary-foreground))',
+          light: 'hsl(var(--primary-light))',
         },
         secondary: {
           DEFAULT: 'hsl(var(--secondary))',
@@ -48,11 +51,35 @@ const config: Config = {
           DEFAULT: 'hsl(var(--card))',
           foreground: 'hsl(var(--card-foreground))',
         },
+        sidebar: 'hsl(var(--sidebar))',
+        success: 'hsl(var(--success))',
+        warning: 'hsl(var(--warning))',
+        error: 'hsl(var(--error))',
+        info: 'hsl(var(--info))',
       },
       borderRadius: {
-        lg: 'var(--radius)',
+        sm: '6px',
+        DEFAULT: '8px',
+        lg: '12px',
+        xl: '16px',
+        full: '9999px',
+        // Keep shadcn/ui compatibility via --radius
         md: 'calc(var(--radius) - 2px)',
-        sm: 'calc(var(--radius) - 4px)',
+      },
+      fontFamily: {
+        sans: ['var(--font-spline-sans)', 'system-ui', 'sans-serif'],
+        mono: ['var(--font-jetbrains-mono)', 'monospace'],
+      },
+      boxShadow: {
+        card: '0 4px 6px -1px rgba(0,0,0,0.2), 0 2px 4px -1px rgba(0,0,0,0.1)',
+        hover: '0 10px 15px -3px rgba(0,0,0,0.3)',
+        dropdown: '0 20px 25px -5px rgba(0,0,0,0.4)',
+        modal: '0 25px 50px -12px rgba(0,0,0,0.5)',
+      },
+      transitionDuration: {
+        fast: '150ms',
+        normal: '200ms',
+        slow: '300ms',
       },
       keyframes: {
         'accordion-down': {

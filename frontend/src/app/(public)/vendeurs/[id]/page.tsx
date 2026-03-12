@@ -16,9 +16,9 @@ const LEVEL_LABELS: Record<VendeurPublicDetail['level'], string> = {
 };
 
 const LEVEL_COLORS: Record<VendeurPublicDetail['level'], string> = {
-  debutant: 'bg-blue-100 text-blue-800',
-  confirme: 'bg-purple-100 text-purple-800',
-  star: 'bg-yellow-100 text-yellow-800',
+  debutant: 'bg-blue-500/15 text-blue-300 border border-blue-500/20',
+  confirme: 'bg-primary/15 text-primary border border-primary/20',
+  star: 'bg-yellow-500/15 text-yellow-300 border border-yellow-500/20',
 };
 
 function formatDate(dateStr: string): string {
@@ -70,7 +70,7 @@ export default function VendeurProfilPage() {
   if (loading) {
     return (
       <div className="flex justify-center items-center min-h-[60vh]">
-        <div className="animate-spin rounded-full h-12 w-12 border-4 border-indigo-500 border-t-transparent" />
+        <div className="animate-spin rounded-full h-12 w-12 border-4 border-primary border-t-transparent" />
       </div>
     );
   }
@@ -79,11 +79,15 @@ export default function VendeurProfilPage() {
   if (notFound || !vendeur) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4 px-4">
-        <h2 className="text-2xl font-bold text-gray-800">Vendeur introuvable</h2>
-        <p className="text-gray-500">
+        <h2 className="text-2xl font-bold text-foreground">Vendeur introuvable</h2>
+        <p className="text-foreground-secondary">
           Ce profil n&apos;existe pas ou a été supprimé.
         </p>
-        <Button variant="outline" onClick={() => router.push('/vendeurs')}>
+        <Button
+          variant="outline"
+          className="border-border text-foreground hover:bg-primary/10"
+          onClick={() => router.push('/vendeurs')}
+        >
           Retour à l&apos;annuaire
         </Button>
       </div>
@@ -93,24 +97,24 @@ export default function VendeurProfilPage() {
   return (
     <>
       {/* Main content with bottom padding for sticky CTA */}
-      <div className="max-w-3xl mx-auto px-4 py-8 sm:px-6 lg:px-8 pb-28">
+      <div className="max-w-3xl mx-auto px-4 py-8 pb-28">
         {/* Breadcrumb */}
-        <nav className="flex items-center gap-2 text-sm text-gray-500 mb-6">
-          <Link href="/" className="hover:text-indigo-600 transition-colors">
+        <nav className="flex items-center gap-2 text-sm text-foreground-secondary mb-6">
+          <Link href="/" className="hover:text-primary transition-colors">
             Accueil
           </Link>
           <span>/</span>
-          <Link href="/vendeurs" className="hover:text-indigo-600 transition-colors">
+          <Link href="/vendeurs" className="hover:text-primary transition-colors">
             Annuaire
           </Link>
           <span>/</span>
-          <span className="text-gray-800 font-medium">
+          <span className="text-foreground font-medium">
             {vendeur.firstName} {vendeur.lastNameInitial}.
           </span>
         </nav>
 
         {/* Profile header */}
-        <div className="bg-white border border-gray-200 rounded-xl p-6 sm:p-8 mb-6">
+        <div className="bg-card border border-border rounded-xl p-6 sm:p-8 mb-6 shadow-card">
           <div className="flex flex-col sm:flex-row items-center sm:items-start gap-5">
             {/* Avatar */}
             <div className="relative flex-shrink-0">
@@ -120,15 +124,15 @@ export default function VendeurProfilPage() {
                   alt={`${vendeur.firstName} ${vendeur.lastNameInitial}.`}
                   width={96}
                   height={96}
-                  className="rounded-full object-cover"
+                  className="rounded-full object-cover ring-2 ring-primary/30"
                 />
               ) : (
-                <div className="w-24 h-24 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-700 font-bold text-3xl">
+                <div className="w-24 h-24 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center text-primary font-bold text-3xl">
                   {initials.toUpperCase()}
                 </div>
               )}
               {vendeur.isStar && (
-                <span className="absolute -top-1 -right-1 bg-yellow-400 text-white text-xs font-bold px-1.5 py-0.5 rounded-full">
+                <span className="absolute -top-1 -right-1 bg-yellow-500/20 text-yellow-300 border border-yellow-500/30 text-xs font-bold px-1.5 py-0.5 rounded-full">
                   ⭐
                 </span>
               )}
@@ -137,11 +141,11 @@ export default function VendeurProfilPage() {
             {/* Info */}
             <div className="flex-1 text-center sm:text-left">
               <div className="flex flex-col sm:flex-row sm:items-center gap-2 flex-wrap justify-center sm:justify-start">
-                <h1 className="text-2xl font-bold text-gray-900">
+                <h1 className="text-2xl font-bold text-foreground">
                   {vendeur.firstName} {vendeur.lastNameInitial}.
                 </h1>
                 {vendeur.isStar && (
-                  <span className="inline-flex items-center gap-1 bg-yellow-100 text-yellow-800 text-xs font-semibold px-2.5 py-1 rounded-full">
+                  <span className="inline-flex items-center gap-1 bg-yellow-500/15 text-yellow-300 border border-yellow-500/20 text-xs font-semibold px-2.5 py-1 rounded-full">
                     ⭐ Vendeur STAR
                   </span>
                 )}
@@ -157,10 +161,10 @@ export default function VendeurProfilPage() {
               {/* Note + missions */}
               <div className="flex items-center gap-2 mt-3 justify-center sm:justify-start">
                 <StarRating rating={vendeur.ratingAvg} size="md" />
-                <span className="text-sm text-gray-700 font-medium">
+                <span className="text-sm text-foreground font-medium">
                   {vendeur.ratingAvg.toFixed(1)}
                 </span>
-                <span className="text-sm text-gray-400">
+                <span className="text-sm text-foreground-secondary">
                   ({vendeur.missionsCount} mission{vendeur.missionsCount > 1 ? 's' : ''})
                 </span>
               </div>
@@ -170,18 +174,18 @@ export default function VendeurProfilPage() {
           {/* Bio */}
           {vendeur.bio && (
             <div className="mt-6">
-              <h2 className="text-base font-semibold text-gray-800 mb-2">À propos</h2>
-              <p className="text-gray-600 leading-relaxed">{vendeur.bio}</p>
+              <h2 className="text-base font-semibold text-foreground mb-2">À propos</h2>
+              <p className="text-foreground-secondary leading-relaxed">{vendeur.bio}</p>
             </div>
           )}
 
           {/* Zones */}
           {vendeur.zones.length > 0 && (
             <div className="mt-5">
-              <h2 className="text-base font-semibold text-gray-800 mb-2">Zones d&apos;intervention</h2>
+              <h2 className="text-base font-semibold text-foreground mb-2">Zones d&apos;intervention</h2>
               <div className="flex flex-wrap gap-2">
                 {vendeur.zones.map((zone) => (
-                  <Badge key={zone} variant="outline">
+                  <Badge key={zone} variant="outline" className="border-border text-foreground-secondary">
                     {zone}
                   </Badge>
                 ))}
@@ -192,10 +196,10 @@ export default function VendeurProfilPage() {
           {/* Catégories */}
           {vendeur.categories.length > 0 && (
             <div className="mt-5">
-              <h2 className="text-base font-semibold text-gray-800 mb-2">Spécialités</h2>
+              <h2 className="text-base font-semibold text-foreground mb-2">Spécialités</h2>
               <div className="flex flex-wrap gap-2">
                 {vendeur.categories.map((cat) => (
-                  <Badge key={cat} className="bg-indigo-50 text-indigo-700 hover:bg-indigo-100">
+                  <Badge key={cat} className="bg-primary/10 text-primary hover:bg-primary/20 border border-primary/20">
                     {cat}
                   </Badge>
                 ))}
@@ -205,43 +209,43 @@ export default function VendeurProfilPage() {
         </div>
 
         {/* Section avis */}
-        <div className="bg-white border border-gray-200 rounded-xl p-6 sm:p-8">
-          <h2 className="text-xl font-bold text-gray-900 mb-5">
+        <div className="bg-card border border-border rounded-xl p-6 sm:p-8 shadow-card">
+          <h2 className="text-xl font-bold text-foreground mb-5">
             Avis clients
             {vendeur.reviews.length > 0 && (
-              <span className="ml-2 text-sm font-normal text-gray-400">
+              <span className="ml-2 text-sm font-normal text-foreground-secondary">
                 ({vendeur.reviews.length})
               </span>
             )}
           </h2>
 
           {vendeur.reviews.length === 0 ? (
-            <p className="text-gray-500 text-sm">Aucun avis pour le moment.</p>
+            <p className="text-foreground-secondary text-sm">Aucun avis pour le moment.</p>
           ) : (
             <div className="space-y-5">
               {vendeur.reviews.map((review, index) => (
                 <div
                   key={index}
-                  className="border-b border-gray-100 last:border-b-0 pb-5 last:pb-0"
+                  className="border-b border-border last:border-b-0 pb-5 last:pb-0"
                 >
                   <div className="flex items-center justify-between flex-wrap gap-2 mb-2">
                     <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-gray-600 font-semibold text-sm">
+                      <div className="w-8 h-8 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center text-primary font-semibold text-sm">
                         {review.clientFirstName?.[0]?.toUpperCase() ?? '?'}
                       </div>
-                      <span className="font-medium text-gray-800 text-sm">
+                      <span className="font-medium text-foreground text-sm">
                         {review.clientFirstName}
                       </span>
                     </div>
                     <div className="flex items-center gap-2">
                       <StarRating rating={review.rating} size="sm" />
-                      <span className="text-xs text-gray-400">
+                      <span className="text-xs text-foreground-secondary">
                         {formatDate(review.createdAt)}
                       </span>
                     </div>
                   </div>
                   {review.comment && (
-                    <p className="text-gray-600 text-sm leading-relaxed ml-11">
+                    <p className="text-foreground-secondary text-sm leading-relaxed ml-11">
                       {review.comment}
                     </p>
                   )}
@@ -253,19 +257,19 @@ export default function VendeurProfilPage() {
       </div>
 
       {/* Sticky CTA */}
-      <div className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-gray-200 shadow-lg px-4 py-4">
+      <div className="fixed bottom-0 left-0 right-0 z-50 bg-sidebar/90 backdrop-blur-md border-t border-border shadow-modal px-4 py-4">
         <div className="max-w-3xl mx-auto flex items-center justify-between gap-4">
           <div className="hidden sm:block">
-            <p className="font-semibold text-gray-900">
+            <p className="font-semibold text-foreground">
               {vendeur.firstName} {vendeur.lastNameInitial}.
             </p>
-            <p className="text-sm text-gray-500">
+            <p className="text-sm text-foreground-secondary">
               {vendeur.ratingAvg.toFixed(1)} ★ · {vendeur.missionsCount} missions
             </p>
           </div>
           <Button
             size="lg"
-            className="w-full sm:w-auto bg-indigo-600 hover:bg-indigo-700 text-white font-semibold px-8"
+            className="w-full sm:w-auto bg-primary hover:bg-primary/90 text-white rounded-lg font-medium transition-colors px-8"
             onClick={() =>
               router.push(`/client/missions/new?vendeur_id=${vendeur.id}`)
             }

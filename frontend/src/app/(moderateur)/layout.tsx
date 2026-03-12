@@ -36,31 +36,32 @@ export default function ModerateurLayout({ children }: { children: React.ReactNo
 
   const sidebarLinks = (
     <>
-      <div className="p-4 border-b">
-        <Link href="/moderateur/dashboard" className="text-lg font-bold text-primary">
-          SELIV
+      <div className="px-4 py-5 border-b border-border">
+        <Link href="/moderateur/dashboard" className="flex items-center gap-2">
+          <span className="text-xl font-black text-foreground">SELIV</span>
+          <span className="bg-primary/20 text-primary text-[10px] font-bold px-1.5 py-0.5 rounded tracking-wide uppercase">Modo</span>
         </Link>
-        <p className="text-xs text-muted-foreground">Modérateur</p>
+        <p className="text-xs text-foreground-secondary mt-1">Modérateur</p>
       </div>
-      <nav className="flex-1 p-3 space-y-1">
+      <nav className="flex-1 px-3 py-4 space-y-0.5">
         {NAV.map(({ href, label, icon: Icon }) => (
           <Link
             key={href}
             href={href}
             className={cn(
-              'flex items-center gap-2 px-3 py-2 rounded-md text-sm transition-colors',
+              'flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors',
               pathname === href
-                ? 'bg-primary text-primary-foreground'
-                : 'hover:bg-muted text-foreground',
+                ? 'bg-primary-light border-l-[3px] border-primary text-foreground font-medium'
+                : 'text-foreground-secondary hover:text-foreground hover:bg-primary-light',
             )}
           >
-            <Icon className="h-4 w-4" />
+            <Icon className={cn('h-4 w-4 flex-shrink-0', pathname === href ? 'text-primary' : '')} />
             {label}
           </Link>
         ))}
       </nav>
-      <div className="p-3 border-t">
-        <Button variant="ghost" size="sm" className="w-full justify-start" onClick={logout}>
+      <div className="px-3 py-4 border-t border-border">
+        <Button variant="ghost" size="sm" className="w-full justify-start text-foreground-secondary hover:text-foreground" onClick={logout}>
           <LogOut className="h-4 w-4 mr-2" />
           Déconnexion
         </Button>
@@ -69,9 +70,9 @@ export default function ModerateurLayout({ children }: { children: React.ReactNo
   );
 
   return (
-    <div className="min-h-screen flex">
+    <div className="min-h-screen flex bg-background">
       {/* Sidebar — desktop uniquement */}
-      <aside className="hidden md:flex w-52 bg-white border-r flex-col shrink-0">
+      <aside className="hidden md:flex w-52 bg-sidebar border-r border-border flex-col shrink-0">
         {sidebarLinks}
       </aside>
 
@@ -84,7 +85,7 @@ export default function ModerateurLayout({ children }: { children: React.ReactNo
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               transition={{ duration: 0.2 }}
-              className="fixed inset-0 z-40 bg-black/50 md:hidden"
+              className="fixed inset-0 z-40 bg-black/60 backdrop-blur-sm md:hidden"
               onClick={() => setDrawerOpen(false)}
             />
             <motion.aside
@@ -92,15 +93,15 @@ export default function ModerateurLayout({ children }: { children: React.ReactNo
               animate={{ x: 0 }}
               exit={{ x: -208 }}
               transition={{ type: 'spring', stiffness: 400, damping: 40 }}
-              className="fixed top-0 left-0 h-full w-52 z-50 bg-white border-r flex flex-col md:hidden"
+              className="fixed top-0 left-0 h-full w-52 z-50 bg-sidebar border-r border-border flex flex-col md:hidden"
             >
               <div className="flex justify-end p-2">
                 <button
                   onClick={() => setDrawerOpen(false)}
-                  className="p-1.5 rounded-md hover:bg-gray-100 transition-colors"
+                  className="p-1.5 rounded-md text-foreground-secondary hover:text-foreground hover:bg-primary-light transition-colors"
                   aria-label="Fermer le menu"
                 >
-                  <X className="h-5 w-5 text-gray-500" />
+                  <X className="h-5 w-5" />
                 </button>
               </div>
               {sidebarLinks}
@@ -111,19 +112,19 @@ export default function ModerateurLayout({ children }: { children: React.ReactNo
 
       <div className="flex-1 flex flex-col min-w-0">
         {/* Header mobile */}
-        <header className="flex md:hidden h-14 border-b bg-white items-center justify-between px-4 sticky top-0 z-30">
+        <header className="flex md:hidden h-14 border-b border-border bg-sidebar items-center justify-between px-4 sticky top-0 z-30">
           <button
             onClick={() => setDrawerOpen(true)}
-            className="p-2 rounded-md hover:bg-gray-100 transition-colors"
+            className="p-1.5 rounded-md text-foreground-secondary hover:text-foreground hover:bg-primary-light transition-colors"
             aria-label="Ouvrir le menu"
           >
-            <Menu className="h-5 w-5 text-gray-600" />
+            <Menu className="h-5 w-5" />
           </button>
-          <span className="text-sm font-semibold text-gray-700">Modération</span>
+          <span className="text-sm font-semibold text-foreground">Modération</span>
           <div className="w-9" />
         </header>
 
-        <main className="flex-1 p-4 md:p-6 bg-gray-50 overflow-y-auto">
+        <main className="flex-1 p-4 md:p-6 overflow-y-auto">
           <PageTransition>{children}</PageTransition>
         </main>
       </div>

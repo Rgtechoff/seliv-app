@@ -1,12 +1,12 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { adminApi } from '@/lib/api';
 import type { Mission } from '@/lib/types';
 import { StatusBadge } from '@/components/status-badge';
 import { formatPrice } from '@/lib/types';
 import Link from 'next/link';
+import { TrendingUp, TrendingDown, ListChecks, Clock, Radio, Euro } from 'lucide-react';
 import {
   BarChart,
   Bar,
@@ -16,13 +16,15 @@ import {
   ResponsiveContainer,
   AreaChart,
   Area,
+  CartesianGrid,
 } from 'recharts';
 
 // Données mock pour les graphiques (MVP)
 const missionsByStatusData = [
-  { name: 'Payées', value: 12 },
-  { name: 'Assignées', value: 8 },
-  { name: 'En cours', value: 3 },
+  { name: 'Draft', value: 12 },
+  { name: 'Payées', value: 8 },
+  { name: 'Assignées', value: 3 },
+  { name: 'En cours', value: 5 },
   { name: 'Terminées', value: 45 },
   { name: 'Annulées', value: 5 },
 ];
@@ -36,7 +38,48 @@ const revenueData = [
   { month: 'Fév', revenus: 11400 },
 ];
 
-const yAxisRevenueFormatter = (v: number): string => `${v}€`;
+const yAxisRevenueFormatter = (v: number): string => `${(v / 1000).toFixed(0)}k€`;
+
+const TOOLTIP_STYLE = {
+  background: '#1a122e',
+  border: '1px solid #2d2442',
+  borderRadius: '8px',
+  fontSize: 12,
+  color: '#fff',
+};
+
+interface KpiCardProps {
+  label: string;
+  value: string | number;
+  trend?: number;
+  icon: React.ElementType;
+  iconBg: string;
+  iconColor: string;
+}
+
+function KpiCard({ label, value, trend, icon: Icon, iconBg, iconColor }: KpiCardProps) {
+  return (
+    <div className="bg-card border border-border rounded-xl p-6 shadow-card">
+      <div className="flex items-start justify-between">
+        <div className="flex-1">
+          <p className="text-sm text-foreground-secondary">{label}</p>
+          <p className="text-3xl font-bold text-foreground mt-2">{value}</p>
+          {trend !== undefined && (
+            <div className={`flex items-center gap-1 mt-1 text-sm font-medium ${trend >= 0 ? 'text-success' : 'text-error'}`}>
+              {trend >= 0
+                ? <TrendingUp className="w-3.5 h-3.5" />
+                : <TrendingDown className="w-3.5 h-3.5" />}
+              {trend >= 0 ? '+' : ''}{trend}%
+            </div>
+          )}
+        </div>
+        <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${iconBg}`}>
+          <Icon className={`w-5 h-5 ${iconColor}`} />
+        </div>
+      </div>
+    </div>
+  );
+}
 
 export default function AdminDashboardPage() {
   const [missions, setMissions] = useState<Mission[]>([]);
@@ -63,119 +106,176 @@ export default function AdminDashboardPage() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold">Dashboard</h1>
+      <div>
+        <h1 className="text-2xl font-bold tracking-tight text-foreground">Dashboard</h1>
+        <p className="text-foreground-secondary text-sm mt-1">Vue d&apos;ensemble de l&apos;activité</p>
+      </div>
 
       {/* KPI Cards */}
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
-        <Card>
-          <CardContent className="pt-6">
-            <p className="text-3xl font-bold">{missions.length}</p>
-            <p className="text-sm text-muted-foreground">Total missions</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="pt-6">
-            <p className="text-3xl font-bold">{pendingPayment}</p>
-            <p className="text-sm text-muted-foreground">En attente paiement</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="pt-6">
-            <p className="text-3xl font-bold">{inProgress}</p>
-            <p className="text-sm text-muted-foreground">Lives en cours</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="pt-6">
-            <p className="text-3xl font-bold">{formatPrice(totalRevenue)}</p>
-            <p className="text-sm text-muted-foreground">CA total</p>
-          </CardContent>
-        </Card>
+        <KpiCard
+          label="Total missions"
+          value={missions.length}
+          trend={12}
+          icon={ListChecks}
+          iconBg="bg-primary/10"
+          iconColor="text-primary"
+        />
+        <KpiCard
+          label="En attente paiement"
+          value={pendingPayment}
+          trend={5}
+          icon={Clock}
+          iconBg="bg-warning/20"
+          iconColor="text-warning"
+        />
+        <KpiCard
+          label="Lives en cours"
+          value={inProgress}
+          trend={-2}
+          icon={Radio}
+          iconBg="bg-info/20"
+          iconColor="text-info"
+        />
+        <KpiCard
+          label="Chiffre d'affaires"
+          value={formatPrice(totalRevenue)}
+          trend={18}
+          icon={Euro}
+          iconBg="bg-success/20"
+          iconColor="text-success"
+        />
       </div>
 
       {/* Graphiques */}
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-        {/* Graphique 1 — Missions par statut */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Missions par statut</CardTitle>
-          </CardHeader>
-          <CardContent>
-            {mounted && (
-              <ResponsiveContainer width="100%" height={250}>
-                <BarChart data={missionsByStatusData} margin={{ top: 4, right: 8, left: -16, bottom: 0 }}>
-                  <XAxis dataKey="name" tick={{ fontSize: 12 }} />
-                  <YAxis tick={{ fontSize: 12 }} />
-                  <Tooltip />
-                  <Bar dataKey="value" fill="#6366f1" radius={[4, 4, 0, 0]} />
-                </BarChart>
-              </ResponsiveContainer>
-            )}
-          </CardContent>
-        </Card>
+        {/* Chart 1 — Missions par statut */}
+        <div className="bg-card border border-border rounded-xl p-6 shadow-card">
+          <h2 className="text-base font-semibold text-foreground mb-4">Missions par statut</h2>
+          {mounted && (
+            <ResponsiveContainer width="100%" height={220}>
+              <BarChart data={missionsByStatusData} margin={{ top: 4, right: 8, left: -16, bottom: 0 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#2d2442" vertical={false} />
+                <XAxis
+                  dataKey="name"
+                  tick={{ fontSize: 11, fill: '#9ca3af' }}
+                  axisLine={{ stroke: '#2d2442' }}
+                  tickLine={false}
+                />
+                <YAxis
+                  tick={{ fontSize: 11, fill: '#9ca3af' }}
+                  axisLine={false}
+                  tickLine={false}
+                />
+                <Tooltip
+                  contentStyle={TOOLTIP_STYLE}
+                  cursor={{ fill: 'rgba(122,56,245,0.08)' }}
+                />
+                <Bar dataKey="value" fill="#7a38f5" radius={[4, 4, 0, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
+          )}
+        </div>
 
-        {/* Graphique 2 — Revenus des 6 derniers mois */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Revenus des 6 derniers mois</CardTitle>
-          </CardHeader>
-          <CardContent>
-            {mounted && (
-              <ResponsiveContainer width="100%" height={250}>
-                <AreaChart data={revenueData} margin={{ top: 4, right: 8, left: 0, bottom: 0 }}>
-                  <defs>
-                    <linearGradient id="colorRevenus" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#6366f1" stopOpacity={0.2} />
-                      <stop offset="95%" stopColor="#6366f1" stopOpacity={0} />
-                    </linearGradient>
-                  </defs>
-                  <XAxis dataKey="month" tick={{ fontSize: 12 }} />
-                  <YAxis tickFormatter={yAxisRevenueFormatter} tick={{ fontSize: 12 }} />
-                  <Tooltip formatter={(value) => [`${value as number ?? 0}€`, 'Revenus']} />
-                  <Area
-                    type="monotone"
-                    dataKey="revenus"
-                    stroke="#6366f1"
-                    strokeWidth={2}
-                    fill="url(#colorRevenus)"
-                  />
-                </AreaChart>
-              </ResponsiveContainer>
-            )}
-          </CardContent>
-        </Card>
+        {/* Chart 2 — Revenus */}
+        <div className="bg-card border border-border rounded-xl p-6 shadow-card">
+          <h2 className="text-base font-semibold text-foreground mb-4">Revenus des 6 derniers mois</h2>
+          {mounted && (
+            <ResponsiveContainer width="100%" height={220}>
+              <AreaChart data={revenueData} margin={{ top: 4, right: 8, left: 0, bottom: 0 }}>
+                <defs>
+                  <linearGradient id="adminRevenusGrad" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#7a38f5" stopOpacity={0.3} />
+                    <stop offset="95%" stopColor="#7a38f5" stopOpacity={0} />
+                  </linearGradient>
+                </defs>
+                <CartesianGrid strokeDasharray="3 3" stroke="#2d2442" vertical={false} />
+                <XAxis
+                  dataKey="month"
+                  tick={{ fontSize: 11, fill: '#9ca3af' }}
+                  axisLine={{ stroke: '#2d2442' }}
+                  tickLine={false}
+                />
+                <YAxis
+                  tickFormatter={yAxisRevenueFormatter}
+                  tick={{ fontSize: 11, fill: '#9ca3af' }}
+                  axisLine={false}
+                  tickLine={false}
+                />
+                <Tooltip
+                  formatter={(value) => [`${value as number ?? 0}€`, 'Revenus']}
+                  contentStyle={TOOLTIP_STYLE}
+                />
+                <Area
+                  type="monotone"
+                  dataKey="revenus"
+                  stroke="#7a38f5"
+                  strokeWidth={2}
+                  fill="url(#adminRevenusGrad)"
+                />
+              </AreaChart>
+            </ResponsiveContainer>
+          )}
+        </div>
       </div>
 
-      {/* Lives d'aujourd'hui */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Lives d&apos;aujourd&apos;hui ({todayMissions.length})</CardTitle>
-        </CardHeader>
-        <CardContent>
-          {loading ? (
-            <p className="text-muted-foreground text-sm">Chargement…</p>
-          ) : todayMissions.length === 0 ? (
-            <p className="text-muted-foreground text-sm">Aucun live prévu aujourd&apos;hui.</p>
-          ) : (
-            <div className="space-y-2">
+      {/* Lives du jour */}
+      <div className="bg-card border border-border rounded-xl overflow-hidden shadow-card">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-border">
+          <h2 className="text-base font-semibold text-foreground">
+            Lives du jour ({todayMissions.length})
+          </h2>
+          <Link
+            href="/admin/missions"
+            className="text-sm text-primary hover:text-primary/80 font-medium transition-colors"
+          >
+            Voir tout
+          </Link>
+        </div>
+
+        {loading ? (
+          <div className="px-6 py-8 text-center text-foreground-secondary text-sm">Chargement…</div>
+        ) : todayMissions.length === 0 ? (
+          <div className="px-6 py-8 text-center text-foreground-secondary text-sm">
+            Aucun live prévu aujourd&apos;hui.
+          </div>
+        ) : (
+          <table className="w-full text-sm">
+            <thead className="bg-sidebar">
+              <tr>
+                <th className="text-left px-4 py-3 text-xs font-medium uppercase tracking-wide text-foreground-secondary">Heure</th>
+                <th className="text-left px-4 py-3 text-xs font-medium uppercase tracking-wide text-foreground-secondary">Catégorie / Ville</th>
+                <th className="text-left px-4 py-3 text-xs font-medium uppercase tracking-wide text-foreground-secondary">Statut</th>
+                <th className="text-right px-4 py-3 text-xs font-medium uppercase tracking-wide text-foreground-secondary">Action</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-border">
               {todayMissions.map((m) => (
-                <div key={m.id} className="flex items-center justify-between p-3 border rounded-lg">
-                  <div>
-                    <p className="font-medium capitalize">{m.category} — {m.city}</p>
-                    <p className="text-xs text-muted-foreground">{m.startTime} · {m.durationHours}h</p>
-                  </div>
-                  <div className="flex items-center gap-3">
+                <tr key={m.id} className="hover:bg-primary-light/50 transition-colors">
+                  <td className="px-4 py-3 font-mono text-xs text-foreground-secondary">
+                    {m.startTime}
+                  </td>
+                  <td className="px-4 py-3">
+                    <p className="font-medium capitalize text-foreground">{m.category}</p>
+                    <p className="text-xs text-foreground-secondary">{m.city} · {m.durationHours}h</p>
+                  </td>
+                  <td className="px-4 py-3">
                     <StatusBadge status={m.status} />
-                    <Link href={`/admin/missions?id=${m.id}`} className="text-xs text-primary hover:underline">
+                  </td>
+                  <td className="px-4 py-3 text-right">
+                    <Link
+                      href={`/admin/missions/${m.id}`}
+                      className="border border-border rounded-lg text-xs px-2 py-1 hover:bg-primary-light text-foreground transition-colors"
+                    >
                       Gérer
                     </Link>
-                  </div>
-                </div>
+                  </td>
+                </tr>
               ))}
-            </div>
-          )}
-        </CardContent>
-      </Card>
+            </tbody>
+          </table>
+        )}
+      </div>
     </div>
   );
 }

@@ -40,7 +40,7 @@ export function MissionCard({ mission, href, actions, index = 0 }: MissionCardPr
           'bg-card border border-border rounded-xl overflow-hidden',
           'border-l-4',
           STATUS_BORDER[mission.status],
-          'hover:shadow-md transition-shadow',
+          'hover:shadow-hover transition-shadow',
         )}
       >
         <div className="p-4 space-y-3">

@@ -37,12 +37,12 @@ export default function AccessPage({ searchParams }: Props) {
   const hasError = searchParams.error === '1';
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-50 to-slate-100 flex items-center justify-center p-4">
-      <div className="bg-white rounded-2xl shadow-xl p-8 w-full max-w-sm space-y-6">
+    <div className="min-h-screen bg-background flex items-center justify-center p-4">
+      <div className="bg-card border border-border rounded-2xl shadow-modal p-8 w-full max-w-sm space-y-6">
         {/* Logo */}
         <div className="text-center space-y-1">
-          <h1 className="text-3xl font-bold text-indigo-600 tracking-tight">SELIV</h1>
-          <p className="text-sm text-slate-500">Accès réservé — phase de test</p>
+          <h1 className="text-3xl font-black text-foreground tracking-tight">SELIV</h1>
+          <p className="text-sm text-foreground-secondary">Accès réservé — phase de test</p>
         </div>
 
         {/* Form */}
@@ -50,7 +50,7 @@ export default function AccessPage({ searchParams }: Props) {
           <input type="hidden" name="redirect" value={to} />
 
           <div className="space-y-1">
-            <label htmlFor="code" className="block text-sm font-medium text-slate-700">
+            <label htmlFor="code" className="block text-sm font-medium text-foreground">
               Code d&apos;accès
             </label>
             <input
@@ -61,25 +61,25 @@ export default function AccessPage({ searchParams }: Props) {
               autoFocus
               autoComplete="off"
               placeholder="••••••••"
-              className="w-full px-3 py-2.5 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm transition"
+              className="w-full px-3 py-2.5 border border-input rounded-lg bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-sm transition"
             />
           </div>
 
           {hasError && (
-            <p className="text-sm text-red-600 bg-red-50 px-3 py-2 rounded-lg">
+            <p className="text-sm text-destructive bg-destructive/10 px-3 py-2 rounded-lg border border-destructive/20">
               Code incorrect, veuillez réessayer.
             </p>
           )}
 
           <button
             type="submit"
-            className="w-full bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 text-white font-semibold py-2.5 px-4 rounded-lg transition-colors text-sm"
+            className="w-full bg-primary hover:bg-primary/90 active:bg-primary/80 text-white font-semibold py-2.5 px-4 rounded-lg transition-colors text-sm"
           >
             Accéder au site
           </button>
         </form>
 
-        <p className="text-center text-xs text-slate-400">
+        <p className="text-center text-xs text-foreground-secondary">
           Ce site est en phase de test et n&apos;est pas accessible au public.
         </p>
       </div>

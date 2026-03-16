@@ -15,6 +15,8 @@ interface MissionCardProps {
   href: string;
   actions?: React.ReactNode;
   index?: number;
+  /** Optional slot to override the address/city display row */
+  addressSlot?: React.ReactNode;
 }
 
 const STATUS_BORDER: Record<MissionStatus, string> = {
@@ -27,7 +29,7 @@ const STATUS_BORDER: Record<MissionStatus, string> = {
   cancelled: 'border-l-red-400',
 };
 
-export function MissionCard({ mission, href, actions, index = 0 }: MissionCardProps) {
+export function MissionCard({ mission, href, actions, index = 0, addressSlot }: MissionCardProps) {
   return (
     <motion.div
       initial={{ opacity: 0, y: 16 }}
@@ -56,8 +58,14 @@ export function MissionCard({ mission, href, actions, index = 0 }: MissionCardPr
 
           <div className="grid grid-cols-2 gap-2 text-sm text-muted-foreground">
             <div className="flex items-center gap-1">
-              <MapPin className="h-3.5 w-3.5 shrink-0" />
-              <span className="truncate">{mission.city}</span>
+              {addressSlot ? (
+                addressSlot
+              ) : (
+                <>
+                  <MapPin className="h-3.5 w-3.5 shrink-0" />
+                  <span className="truncate">{mission.address_display ?? mission.city}</span>
+                </>
+              )}
             </div>
             <div className="flex items-center gap-1">
               <Clock className="h-3.5 w-3.5 shrink-0" />

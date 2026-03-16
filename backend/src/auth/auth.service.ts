@@ -2,19 +2,26 @@ import {
   Injectable,
   UnauthorizedException,
   ConflictException,
+  BadRequestException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 import * as bcrypt from 'bcrypt';
+import * as crypto from 'crypto';
 import { UsersService } from '../users/users.service';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
 import { User } from '../users/entities/user.entity';
+import { EmailService } from './email.service';
 
 @Injectable()
 export class AuthService {
   constructor(
     private usersService: UsersService,
     private jwtService: JwtService,
+    private emailService: EmailService,
+    @InjectRepository(User) private userRepo: Repository<User>,
   ) {}
 
   async register(
@@ -49,6 +56,39 @@ export class AuthService {
 
     const token = this.generateToken(user);
     return { access_token: token, user: this.sanitizeUser(user) };
+  }
+
+  async forgotPassword(email: string): Promise<void> {
+    const user = await this.usersService.findByEmail(email);
+    // Always succeed silently — never reveal if email exists
+    if (!user) return;
+
+    const resetToken = crypto.randomBytes(32).toString('hex');
+    const expires = new Date(Date.now() + 60 * 60 * 1000); // 1 hour
+
+    await this.userRepo.update(user.id, {
+      passwordResetToken: resetToken,
+      passwordResetExpires: expires,
+    });
+
+    await this.emailService.sendPasswordReset(user.email, user.firstName, resetToken);
+  }
+
+  async resetPassword(token: string, newPassword: string): Promise<void> {
+    const user = await this.userRepo.findOne({
+      where: { passwordResetToken: token },
+    });
+
+    if (!user || !user.passwordResetExpires || user.passwordResetExpires < new Date()) {
+      throw new BadRequestException('Token invalide ou expiré');
+    }
+
+    const passwordHash = await bcrypt.hash(newPassword, 12);
+    await this.userRepo.update(user.id, {
+      passwordHash,
+      passwordResetToken: null,
+      passwordResetExpires: null,
+    });
   }
 
   private generateToken(user: User): string {

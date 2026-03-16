@@ -3,6 +3,8 @@ import {
   NotFoundException,
   BadRequestException,
   ForbiddenException,
+  Inject,
+  forwardRef,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -12,6 +14,8 @@ import { CreateMissionDto } from './dto/create-mission.dto';
 import { MissionStatus } from '../common/enums/mission-status.enum';
 import { PricingService } from './pricing.service';
 import { SubscriptionPlan } from '../common/enums/subscription-plan.enum';
+import { ChatGateway } from '../chat/chat.gateway';
+import { PromoCodesService } from '../promo-codes/promo-codes.service';
 
 // State machine: allowed transitions
 const ALLOWED_TRANSITIONS: Record<MissionStatus, MissionStatus[]> = {
@@ -36,6 +40,9 @@ export class MissionsService {
     @InjectRepository(MissionOption)
     private readonly optionRepo: Repository<MissionOption>,
     private readonly pricingService: PricingService,
+    @Inject(forwardRef(() => ChatGateway))
+    private readonly chatGateway: ChatGateway,
+    private readonly promoCodesService: PromoCodesService,
   ) {}
 
   validateTransition(from: MissionStatus, to: MissionStatus): void {
@@ -62,7 +69,7 @@ export class MissionsService {
     }
 
     const optionPrices = dto.options.map((o) => o.price);
-    const basePrice = this.pricingService.calculateBasePrice(
+    const basePrice = await this.pricingService.calculateBasePrice(
       dto.volume,
       dto.durationHours,
       plan,
@@ -70,7 +77,22 @@ export class MissionsService {
     const discount =
       this.pricingService.getHourlyDiscount(plan) * dto.durationHours;
     const optionsPrice = optionPrices.reduce((s, p) => s + p, 0);
-    const totalPrice = basePrice + optionsPrice;
+    const priceBeforePromo = basePrice + optionsPrice;
+
+    // Apply promo code if provided
+    let promoDiscount = 0;
+    let promoCode: string | null = null;
+    if (dto.promoCode) {
+      const promoResult = await this.promoCodesService.validate(
+        dto.promoCode,
+        priceBeforePromo,
+      );
+      promoDiscount = promoResult.discountAmount;
+      promoCode = dto.promoCode.toUpperCase();
+      await this.promoCodesService.incrementUsage(dto.promoCode);
+    }
+
+    const totalPrice = Math.max(0, priceBeforePromo - promoDiscount);
 
     const mission = this.missionRepo.create({
       clientId,
@@ -79,12 +101,17 @@ export class MissionsService {
       startTime: dto.startTime,
       durationHours: dto.durationHours,
       address: dto.address,
+      addressStreet: dto.addressStreet ?? null,
+      addressCity: dto.addressCity ?? null,
+      addressPostalCode: dto.addressPostalCode ?? null,
       city: dto.city,
       category: dto.category,
       volume: dto.volume,
       basePrice,
       optionsPrice,
       discount,
+      promoCode,
+      promoDiscount,
       totalPrice,
     });
 
@@ -146,7 +173,13 @@ export class MissionsService {
     this.validateTransition(mission.status, MissionStatus.ASSIGNED);
     mission.vendeurId = vendeurId;
     mission.status = MissionStatus.ASSIGNED;
-    return this.missionRepo.save(mission);
+    const saved = await this.missionRepo.save(mission);
+
+    const assignedMission = await this.findById(missionId);
+    const vendeurFirstName = assignedMission?.vendeur?.firstName ?? 'Le vendeur';
+    await this.chatGateway.onMissionAccepted(missionId, vendeurFirstName);
+
+    return saved;
   }
 
   async markInProgress(missionId: string): Promise<Mission> {

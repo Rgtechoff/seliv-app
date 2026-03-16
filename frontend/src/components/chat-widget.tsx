@@ -58,8 +58,8 @@ export function ChatWidget({ missionId, currentUser }: ChatWidgetProps) {
       transports: ['websocket'],
     });
     socketRef.current = socket;
-    socket.emit('joinMission', { missionId });
-    socket.on('newMessage', (msg: ChatMessage) => {
+    socket.emit('joinMission', missionId);
+    socket.on('receiveMessage', (msg: ChatMessage) => {
       setMessages((prev) => [...prev, msg]);
     });
     return () => {
@@ -73,13 +73,13 @@ export function ChatWidget({ missionId, currentUser }: ChatWidgetProps) {
 
   const sendText = () => {
     if (!text.trim() || !socketRef.current) return;
-    socketRef.current.emit('sendMessage', { missionId, content: text.trim() });
+    socketRef.current.emit('sendMessage', { missionId, content: text.trim(), senderId: currentUser.id });
     setText('');
   };
 
   const sendPreset = (label: string) => {
     if (!socketRef.current) return;
-    socketRef.current.emit('sendMessage', { missionId, content: label, isPreset: true });
+    socketRef.current.emit('sendMessage', { missionId, content: label, isPreset: true, senderId: currentUser.id });
   };
 
   return (

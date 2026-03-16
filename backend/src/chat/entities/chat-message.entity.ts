@@ -40,6 +40,25 @@ export class ChatMessage {
   @Column({ name: 'is_system', default: false })
   isSystem: boolean;
 
+  @Column({
+    name: 'chat_phase',
+    type: 'varchar',
+    length: 20,
+    default: 'post_acceptance',
+  })
+  chatPhase: string; // 'pre_acceptance' | 'post_acceptance'
+
+  @Column({
+    name: 'moderation_action',
+    type: 'varchar',
+    length: 10,
+    default: 'allow',
+  })
+  moderationAction: string; // 'allow' | 'flag' | 'block'
+
+  @Column({ name: 'moderation_score', type: 'int', default: 0 })
+  moderationScore: number;
+
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;
 }

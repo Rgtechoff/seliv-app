@@ -40,6 +40,10 @@ apiClient.interceptors.response.use(
 export const authApi = {
   login: (email: string, password: string) =>
     apiClient.post('/auth/login', { email, password }),
+  forgotPassword: (email: string) =>
+    apiClient.post('/auth/forgot-password', { email }),
+  resetPassword: (token: string, password: string) =>
+    apiClient.post('/auth/reset-password', { token, password }),
   register: (data: {
     email: string;
     password: string;
@@ -94,13 +98,38 @@ export const reviewsApi = {
     apiClient.get(`/reviews/vendeur/${vendeurId}`),
 };
 
+export interface Conversation {
+  missionId: string;
+  category: string;
+  date: string;
+  status: string;
+  city: string;
+  lastMessage: {
+    content: string;
+    senderId: string;
+    createdAt: string;
+    isPreset: boolean;
+  } | null;
+  otherParticipant: {
+    id: string;
+    firstName: string;
+    lastName: string;
+    avatarUrl: string | null;
+  } | null;
+}
+
 export const chatApi = {
+  getConversations: () => apiClient.get<{ data: Conversation[] }>('/chat/conversations'),
   getMessages: (missionId: string) =>
     apiClient.get(`/chat/${missionId}/messages`),
   getPresets: (category?: string) =>
     apiClient.get('/chat/presets', {
       params: category ? { category } : undefined,
     }),
+  getPhase: (missionId: string) =>
+    apiClient.get<{ data: { phase: string; remaining: number | null; missionId: string } }>(`/chat/${missionId}/phase`),
+  getInterests: (missionId: string) =>
+    apiClient.get(`/chat/${missionId}/interests`),
 };
 
 export const availabilitiesApi = {
@@ -187,4 +216,48 @@ export const adminApi = {
     apiClient.get('/admin/export/missions', { responseType: 'blob' }),
   getSubscriptions: () => apiClient.get('/admin/subscriptions'),
   getMission: (id: string) => apiClient.get(`/missions/${id}`),
+  // Pricing
+  getPricing: () => apiClient.get('/admin/pricing'),
+  createPricing: (data: { key: string; label: string; category: 'hourly_rate' | 'option'; valueCentimes: number }) =>
+    apiClient.post('/admin/pricing', data),
+  updatePricing: (key: string, valueCentimes: number, label?: string) =>
+    apiClient.put(`/admin/pricing/${key}`, { valueCentimes, label }),
+  deletePricing: (key: string) => apiClient.delete(`/admin/pricing/${key}`),
+  // Promo codes
+  getPromoCodes: () => apiClient.get('/admin/promo-codes'),
+  createPromoCode: (data: {
+    code: string;
+    label?: string;
+    discountType: 'percent' | 'fixed' | 'free';
+    discountValue: number;
+    maxUses?: number;
+    expiresAt?: string;
+    isActive?: boolean;
+  }) => apiClient.post('/admin/promo-codes', data),
+  updatePromoCode: (id: string, data: Partial<{
+    label: string;
+    discountType: 'percent' | 'fixed' | 'free';
+    discountValue: number;
+    maxUses: number;
+    expiresAt: string;
+    isActive: boolean;
+  }>) => apiClient.patch(`/admin/promo-codes/${id}`, data),
+  deletePromoCode: (id: string) => apiClient.delete(`/admin/promo-codes/${id}`),
+};
+
+export const missionsPromoApi = {
+  validatePromo: (code: string, priceBeforePromo: number) =>
+    apiClient.post('/missions/validate-promo', { code, priceBeforePromo }),
+};
+
+export interface PricingConfigPublic {
+  id: string;
+  key: string;
+  label: string;
+  category: 'hourly_rate' | 'option';
+  valueCentimes: number;
+}
+
+export const pricingPublicApi = {
+  getAll: () => apiClient.get<{ data: PricingConfigPublic[] }>('/pricing/public'),
 };

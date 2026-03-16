@@ -2,7 +2,9 @@ import {
   Controller,
   Get,
   Post,
+  Put,
   Patch,
+  Delete,
   Param,
   ParseUUIDPipe,
   UseGuards,
@@ -19,7 +21,10 @@ import { UsersService } from '../users/users.service';
 import { ChatService } from '../chat/chat.service';
 import { SubscriptionsService } from '../subscriptions/subscriptions.service';
 import { MissionStatus } from '../common/enums/mission-status.enum';
-import { IsEnum, IsOptional, IsUUID } from 'class-validator';
+import { IsEnum, IsInt, IsOptional, IsString, IsUUID, Min } from 'class-validator';
+import { PricingConfigService } from '../pricing-config/pricing-config.service';
+import { PromoCodesService } from '../promo-codes/promo-codes.service';
+import { CreatePromoCodeDto, UpdatePromoCodeDto } from '../promo-codes/dto/create-promo-code.dto';
 
 class AdminAssignVendeurDto {
   @IsUUID()
@@ -34,6 +39,31 @@ class AdminChangeStatusDto {
   reason?: string;
 }
 
+class UpdatePricingDto {
+  @IsInt()
+  @Min(0)
+  valueCentimes: number;
+
+  @IsOptional()
+  @IsString()
+  label?: string;
+}
+
+class CreatePricingDto {
+  @IsString()
+  key: string;
+
+  @IsString()
+  label: string;
+
+  @IsEnum(['hourly_rate', 'option'])
+  category: 'hourly_rate' | 'option';
+
+  @IsInt()
+  @Min(0)
+  valueCentimes: number;
+}
+
 @Controller('admin')
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Roles(UserRole.ADMIN)
@@ -43,6 +73,8 @@ export class AdminController {
     private readonly usersService: UsersService,
     private readonly chatService: ChatService,
     private readonly subscriptionsService: SubscriptionsService,
+    private readonly pricingConfigService: PricingConfigService,
+    private readonly promoCodesService: PromoCodesService,
   ) {}
 
   @Get('missions')
@@ -130,6 +162,62 @@ export class AdminController {
   @Post('chat/:id/delete')
   async deleteMessage(@Param('id', ParseUUIDPipe) id: string) {
     await this.chatService.deleteMessage(id);
+    return { data: { success: true } };
+  }
+
+  // ─── Pricing Config ───────────────────────────────────────────
+  @Get('pricing')
+  async getPricing() {
+    const configs = await this.pricingConfigService.getAll();
+    return { data: configs };
+  }
+
+  @Post('pricing')
+  async createPricing(@Body() dto: CreatePricingDto) {
+    const config = await this.pricingConfigService.create(dto);
+    return { data: config };
+  }
+
+  @Put('pricing/:key')
+  async updatePricing(
+    @Param('key') key: string,
+    @Body() dto: UpdatePricingDto,
+  ) {
+    const config = await this.pricingConfigService.updateByKey(key, dto.valueCentimes, dto.label);
+    return { data: config };
+  }
+
+  @Delete('pricing/:key')
+  async deletePricing(@Param('key') key: string) {
+    await this.pricingConfigService.remove(key);
+    return { data: { success: true } };
+  }
+
+  // ─── Promo Codes ──────────────────────────────────────────────
+  @Get('promo-codes')
+  async getPromoCodes() {
+    const codes = await this.promoCodesService.findAll();
+    return { data: codes };
+  }
+
+  @Post('promo-codes')
+  async createPromoCode(@Body() dto: CreatePromoCodeDto) {
+    const code = await this.promoCodesService.create(dto);
+    return { data: code };
+  }
+
+  @Patch('promo-codes/:id')
+  async updatePromoCode(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() dto: UpdatePromoCodeDto,
+  ) {
+    const code = await this.promoCodesService.update(id, dto);
+    return { data: code };
+  }
+
+  @Delete('promo-codes/:id')
+  async deletePromoCode(@Param('id', ParseUUIDPipe) id: string) {
+    await this.promoCodesService.remove(id);
     return { data: { success: true } };
   }
 

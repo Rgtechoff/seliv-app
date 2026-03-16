@@ -54,6 +54,12 @@ export interface Mission {
   createdAt: string;
   client?: Partial<User>;
   vendeur?: Partial<User>;
+  // Address masking fields (from serializeAddress)
+  address_display?: string;
+  address_street?: string | null;
+  address_city?: string | null;
+  address_postal_code?: string | null;
+  address_masked?: boolean;
 }
 
 export interface Subscription {

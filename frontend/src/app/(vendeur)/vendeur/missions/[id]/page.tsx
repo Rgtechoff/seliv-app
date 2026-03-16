@@ -3,7 +3,7 @@
 import { useParams } from 'next/navigation';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
-import { MapPin, Clock, Package, Calendar } from 'lucide-react';
+import { MapPin, Clock, Package, Calendar, Copy, ExternalLink } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
@@ -40,11 +40,25 @@ export default function VendeurMissionDetailPage() {
     }
   };
 
+  const handleCopyAddress = () => {
+    if (mission?.address_display) {
+      navigator.clipboard.writeText(mission.address_display);
+    }
+  };
+
+  const handleOpenMaps = () => {
+    if (mission?.address_display) {
+      const query = encodeURIComponent(mission.address_display);
+      window.open(`https://maps.google.com/?q=${query}`, '_blank');
+    }
+  };
+
   if (isLoading) return <p className="text-muted-foreground">Chargement…</p>;
   if (error || !mission)
     return <Alert variant="destructive"><AlertDescription>{error ?? 'Mission introuvable'}</AlertDescription></Alert>;
 
   const isMyMission = mission.vendeurId === user?.id;
+  const addressMasked = mission.address_masked !== false; // default to masked if undefined
 
   return (
     <div className="max-w-2xl mx-auto space-y-6">
@@ -67,10 +81,52 @@ export default function VendeurMissionDetailPage() {
             <Clock className="h-4 w-4 text-muted-foreground" />
             <span>{mission.startTime} · {mission.durationHours}h</span>
           </div>
-          <div className="flex items-center gap-2 col-span-2">
-            <MapPin className="h-4 w-4 text-muted-foreground" />
-            <span>{mission.city}</span>
+
+          {/* Address row — masked or revealed */}
+          <div className="col-span-2">
+            {addressMasked ? (
+              <div className="flex items-start gap-2 p-3 bg-amber-900/20 border border-amber-800/40 rounded-xl text-xs text-amber-400">
+                <span>🔒</span>
+                <div>
+                  <p className="font-medium mb-0.5">Adresse masquée</p>
+                  <p>Acceptez la mission pour voir l&apos;adresse exacte.</p>
+                  {mission.address_display && (
+                    <p className="mt-1 text-amber-300/80">
+                      📍 {mission.address_display}
+                    </p>
+                  )}
+                </div>
+              </div>
+            ) : (
+              <div className="space-y-2">
+                <div className="flex items-center gap-2">
+                  <MapPin className="h-4 w-4 text-muted-foreground shrink-0" />
+                  <span className="text-foreground">{mission.address_display ?? mission.city}</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="h-8 text-xs gap-1.5 border-border"
+                    onClick={handleCopyAddress}
+                  >
+                    <Copy className="h-3.5 w-3.5" />
+                    Copier
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="h-8 text-xs gap-1.5 border-border"
+                    onClick={handleOpenMaps}
+                  >
+                    <ExternalLink className="h-3.5 w-3.5" />
+                    Google Maps
+                  </Button>
+                </div>
+              </div>
+            )}
           </div>
+
           <div className="flex items-center gap-2">
             <Package className="h-4 w-4 text-muted-foreground" />
             <span>{mission.volume} articles</span>

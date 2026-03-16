@@ -1,19 +1,21 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import Link from 'next/link';
-import { LayoutDashboard, ListChecks, User, LogOut, CalendarDays } from 'lucide-react';
+import { LayoutDashboard, ListChecks, User, LogOut, CalendarDays, MessageSquare } from 'lucide-react';
 import { useAuth } from '@/lib/hooks/use-auth';
 import { NotificationBell } from '@/components/notification-bell';
 import { Button } from '@/components/ui/button';
 import { AppBottomNav } from '@/components/app-bottom-nav';
 import { PageTransition } from '@/components/page-transition';
+import { notificationsApi } from '@/lib/api';
 import { cn } from '@/lib/utils';
 
 const NAV = [
   { href: '/vendeur/dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { href: '/vendeur/missions', label: 'Missions dispo', icon: ListChecks },
+  { href: '/vendeur/messages', label: 'Messages', icon: MessageSquare },
   { href: '/vendeur/disponibilites', label: 'Disponibilités', icon: CalendarDays },
   { href: '/vendeur/profil', label: 'Mon profil', icon: User },
 ];
@@ -22,12 +24,22 @@ export default function VendeurLayout({ children }: { children: React.ReactNode 
   const router = useRouter();
   const pathname = usePathname();
   const { user, isLoading, logout } = useAuth();
+  const [unreadMessages, setUnreadMessages] = useState(0);
 
   useEffect(() => {
     if (!isLoading && (!user || user.role !== 'vendeur')) {
       router.push('/login');
     }
   }, [user, isLoading, router]);
+
+  useEffect(() => {
+    if (!user) return;
+    notificationsApi.getAll().then((res) => {
+      const notifs = (res.data as { data: { type: string; isRead: boolean }[] }).data ?? [];
+      const count = notifs.filter((n) => n.type === 'new_chat_message' && !n.isRead).length;
+      setUnreadMessages(count);
+    });
+  }, [user]);
 
   if (isLoading || !user) return null;
 
@@ -63,6 +75,11 @@ export default function VendeurLayout({ children }: { children: React.ReactNode 
                 pathname === href || pathname.startsWith(href + '/') ? 'text-primary' : '',
               )} />
               {label}
+              {href === '/vendeur/messages' && unreadMessages > 0 && (
+                <span className="ml-auto text-[10px] bg-primary text-primary-foreground rounded-full px-1.5 py-0.5 font-bold">
+                  {unreadMessages > 9 ? '9+' : unreadMessages}
+                </span>
+              )}
             </Link>
           ))}
         </nav>

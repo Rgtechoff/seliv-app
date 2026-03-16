@@ -5,6 +5,7 @@ import { adminApi } from '@/lib/api';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { AlertTriangle, CheckCircle, Trash2, MessageSquare } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 interface FlaggedMessage {
   id: string;
@@ -13,6 +14,7 @@ interface FlaggedMessage {
   content: string;
   isFlagged: boolean;
   flagReason?: string;
+  chatPhase?: 'pre_acceptance' | 'post_acceptance';
   createdAt: string;
 }
 
@@ -28,6 +30,22 @@ function FlagTypeBadge({ reason }: { reason?: string }) {
     <span className={`inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded border ${entry.cls}`}>
       <AlertTriangle className="w-3 h-3" />
       {entry.label}
+    </span>
+  );
+}
+
+function PhaseBadge({ phase }: { phase?: 'pre_acceptance' | 'post_acceptance' }) {
+  if (!phase) return null;
+  return (
+    <span
+      className={cn(
+        'text-xs px-2 py-0.5 rounded-full font-medium',
+        phase === 'pre_acceptance'
+          ? 'bg-amber-900/30 text-amber-400'
+          : 'bg-blue-900/30 text-blue-400',
+      )}
+    >
+      {phase === 'pre_acceptance' ? 'Pré-acceptation' : 'Post-acceptation'}
     </span>
   );
 }
@@ -54,6 +72,10 @@ export default function AdminChatModerationPage() {
     setMessages((prev) => prev.filter((m) => m.id !== id));
   };
 
+  const blockedCount = messages.filter((m) => m.flagReason === 'contact_info').length;
+  const flaggedCount = messages.filter((m) => m.isFlagged).length;
+  const total = messages.length;
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -63,6 +85,24 @@ export default function AdminChatModerationPage() {
           Gérez les violations des conditions d&apos;utilisation et les tentatives de contournement.
         </p>
       </div>
+
+      {/* Stat cards */}
+      {!loading && (
+        <div className="grid grid-cols-3 gap-4">
+          <div className="bg-card border border-border rounded-xl p-4">
+            <p className="text-xs text-foreground-secondary">Bloqués</p>
+            <p className="text-2xl font-bold text-red-400">{blockedCount}</p>
+          </div>
+          <div className="bg-card border border-border rounded-xl p-4">
+            <p className="text-xs text-foreground-secondary">Flaggés</p>
+            <p className="text-2xl font-bold text-amber-400">{flaggedCount}</p>
+          </div>
+          <div className="bg-card border border-border rounded-xl p-4">
+            <p className="text-xs text-foreground-secondary">Total</p>
+            <p className="text-2xl font-bold text-foreground">{total}</p>
+          </div>
+        </div>
+      )}
 
       {loading ? (
         <div className="flex items-center justify-center h-32">
@@ -83,13 +123,14 @@ export default function AdminChatModerationPage() {
               key={msg.id}
               className="bg-card border border-warning/30 border-l-4 border-l-warning rounded-xl p-5 shadow-card"
             >
-              {/* Top row: ID + reason + date */}
-              <div className="flex items-center justify-between mb-3">
-                <div className="flex items-center gap-3">
+              {/* Top row: ID + reason + phase + date */}
+              <div className="flex items-center justify-between mb-3 flex-wrap gap-2">
+                <div className="flex items-center gap-2 flex-wrap">
                   <span className="font-mono text-xs text-foreground-secondary bg-sidebar px-2 py-0.5 rounded">
                     #{msg.id.slice(0, 8).toUpperCase()}
                   </span>
                   <FlagTypeBadge reason={msg.flagReason} />
+                  <PhaseBadge phase={msg.chatPhase} />
                 </div>
                 <span className="text-xs text-foreground-secondary">
                   {format(new Date(msg.createdAt), 'dd MMM yyyy · HH:mm', { locale: fr })}

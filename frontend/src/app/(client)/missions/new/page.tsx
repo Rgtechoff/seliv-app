@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useForm, Controller, type Resolver } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -10,7 +10,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { PriceBreakdown } from '@/components/price-breakdown';
-import { missionsApi, paymentsApi } from '@/lib/api';
+import { missionsApi, paymentsApi, missionsPromoApi, pricingPublicApi, type PricingConfigPublic } from '@/lib/api';
 import {
   CATEGORIES,
   VOLUMES,
@@ -18,14 +18,16 @@ import {
   formatPrice,
   type VolumeEnum,
 } from '@/lib/types';
-import { CalendarDays, Clock, Sparkles, ShoppingBag, Monitor, Home, ArrowLeft, CreditCard } from 'lucide-react';
+import { CalendarDays, Clock, Sparkles, ShoppingBag, Monitor, Home, ArrowLeft, CreditCard, Tag, CheckCircle, XCircle, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 const schema = z.object({
   date: z.string().min(1, 'Date requise'),
   startTime: z.string().min(1, 'Heure requise'),
   durationHoursStr: z.string().min(1, 'Durée requise'),
-  address: z.string().min(5, 'Adresse requise'),
+  addressStreet: z.string().min(5, 'Adresse requise (numéro + rue)'),
+  addressCity: z.string().min(2, 'Ville requise'),
+  addressPostalCode: z.string().min(4, 'Code postal requis'),
   city: z.string().min(2, 'Ville requise'),
   category: z.string().min(1, 'Catégorie requise'),
   volume: z.enum(['30', '50', '100', '200'] as const),
@@ -33,7 +35,27 @@ const schema = z.object({
 });
 type FormData = z.infer<typeof schema>;
 
-const HOURLY_RATES: Record<VolumeEnum, number> = { '30': 8000, '50': 9000, '100': 11000, '200': 14000 };
+// Default fallback rates (used before API loads)
+const DEFAULT_HOURLY_RATES: Record<VolumeEnum, number> = { '30': 8000, '50': 9000, '100': 11000, '200': 14000 };
+
+function buildDynamicData(configs: PricingConfigPublic[]) {
+  const hourlyRates: Record<string, number> = {};
+  const dynamicOptions: { key: string; label: string; price: number }[] = [];
+
+  for (const c of configs) {
+    if (c.category === 'hourly_rate') {
+      // key pattern: rate_30, rate_50, rate_100, rate_200
+      const vol = c.key.replace('rate_', '');
+      hourlyRates[vol] = c.valueCentimes;
+    } else if (c.category === 'option') {
+      // key pattern: option_prep_30 → strip 'option_' prefix
+      const optKey = c.key.startsWith('option_') ? c.key.slice(7) : c.key;
+      dynamicOptions.push({ key: optKey, label: c.label, price: c.valueCentimes });
+    }
+  }
+
+  return { hourlyRates, dynamicOptions };
+}
 
 const CATEGORY_ICONS: Record<string, React.ReactNode> = {
   Mode: <ShoppingBag className="h-5 w-5" />,
@@ -43,10 +65,42 @@ const CATEGORY_ICONS: Record<string, React.ReactNode> = {
 };
 
 
+interface PromoResult {
+  discountAmount: number;
+  finalPrice: number;
+  discountType: 'percent' | 'fixed' | 'free';
+  discountValue: number;
+}
+
 export default function NewMissionPage() {
   const [error, setError] = useState('');
   const [step, setStep] = useState<1 | 2>(1);
   const [selectedCategory, setSelectedCategory] = useState('');
+  const [promoCode, setPromoCode] = useState('');
+  const [promoResult, setPromoResult] = useState<PromoResult | null>(null);
+  const [promoError, setPromoError] = useState('');
+  const [promoLoading, setPromoLoading] = useState(false);
+  const [hourlyRates, setHourlyRates] = useState<Record<string, number>>(DEFAULT_HOURLY_RATES);
+  const [dynamicOptions, setDynamicOptions] = useState<{ key: string; label: string; price: number }[]>(OPTIONS_CATALOG);
+  const [dynamicVolumes, setDynamicVolumes] = useState(VOLUMES);
+
+  useEffect(() => {
+    void pricingPublicApi.getAll().then((res) => {
+      const configs = res.data.data;
+      const { hourlyRates: rates, dynamicOptions: opts } = buildDynamicData(configs);
+      if (Object.keys(rates).length > 0) {
+        setHourlyRates((prev) => ({ ...prev, ...rates }));
+        // Rebuild volumes list with updated rates
+        setDynamicVolumes(
+          VOLUMES.map((v) => ({
+            ...v,
+            rate: Math.round((rates[v.value] ?? v.rate * 100) / 100),
+          })),
+        );
+      }
+      if (opts.length > 0) setDynamicOptions(opts);
+    }).catch(() => { /* fallback to defaults */ });
+  }, []);
 
   const {
     register,
@@ -66,12 +120,36 @@ export default function NewMissionPage() {
   const durationHours = parseInt(durationHoursStr, 10) || 2;
   const selectedOptions = watch('options') ?? [];
 
-  const basePrice = (HOURLY_RATES[volume] ?? 9000) * durationHours;
-  const optionsPrice = OPTIONS_CATALOG.filter((o) => selectedOptions.includes(o.key)).reduce(
+  const basePrice = (hourlyRates[volume] ?? 9000) * durationHours;
+  const optionsPrice = dynamicOptions.filter((o) => selectedOptions.includes(o.key)).reduce(
     (s, o) => s + o.price,
     0,
   );
-  const totalPrice = basePrice + optionsPrice;
+  const priceBeforePromo = basePrice + optionsPrice;
+  const promoDiscount = promoResult?.discountAmount ?? 0;
+  const totalPrice = Math.max(0, priceBeforePromo - promoDiscount);
+
+  const handleApplyPromo = async () => {
+    if (!promoCode.trim()) return;
+    setPromoLoading(true);
+    setPromoError('');
+    setPromoResult(null);
+    try {
+      const res = await missionsPromoApi.validatePromo(promoCode.trim(), priceBeforePromo);
+      setPromoResult((res.data as { data: PromoResult }).data);
+    } catch (e: unknown) {
+      const err = e as { response?: { data?: { message?: string } } };
+      setPromoError(err?.response?.data?.message ?? 'Code invalide');
+    } finally {
+      setPromoLoading(false);
+    }
+  };
+
+  const handleRemovePromo = () => {
+    setPromoCode('');
+    setPromoResult(null);
+    setPromoError('');
+  };
 
   const toggleOption = (key: string) => {
     const curr = selectedOptions.includes(key)
@@ -83,15 +161,24 @@ export default function NewMissionPage() {
   const onSubmit = async (data: FormData) => {
     setError('');
     try {
+      // Build legacy `address` field for backward compatibility
+      const address = `${data.addressStreet}, ${data.addressCity} ${data.addressPostalCode}`.trim();
       const res = await missionsApi.create({
         date: data.date,
         startTime: data.startTime,
         durationHours: parseInt(data.durationHoursStr, 10),
-        address: data.address,
-        city: data.city,
+        address,
+        addressStreet: data.addressStreet,
+        addressCity: data.addressCity,
+        addressPostalCode: data.addressPostalCode,
+        city: data.addressCity,
         category: data.category,
         volume: data.volume,
-        options: data.options,
+        options: data.options.map((key) => {
+          const opt = dynamicOptions.find((o) => o.key === key);
+          return { optionType: key, price: opt?.price ?? 0 };
+        }),
+        ...(promoResult && promoCode ? { promoCode: promoCode.toUpperCase() } : {}),
       });
       const mission = res.data.data as { id: string };
       const checkout = await paymentsApi.createCheckout(mission.id);
@@ -211,24 +298,49 @@ export default function NewMissionPage() {
                     </div>
                   </div>
                 </div>
-                <div className="space-y-1.5">
-                  <Label className="text-sm font-medium text-foreground">Adresse</Label>
-                  <Input
-                    placeholder="15 rue de Rivoli"
-                    className="bg-card border-border text-foreground placeholder:text-foreground-secondary/60"
-                    {...register('address')}
-                  />
-                  {errors.address && <p className="text-xs text-destructive">{errors.address.message}</p>}
+
+                {/* Où — 3 champs adresse séparés */}
+                <div>
+                  <h3 className="text-base font-semibold text-foreground mb-3">Où</h3>
+                  <div className="space-y-3">
+                    <div className="space-y-1.5">
+                      <Label className="text-sm font-medium text-foreground">Adresse (numéro + rue)</Label>
+                      <Input
+                        placeholder="42 rue de la Paix"
+                        className="bg-card border-border text-foreground placeholder:text-foreground-secondary/60"
+                        {...register('addressStreet')}
+                      />
+                      {errors.addressStreet && <p className="text-xs text-destructive">{errors.addressStreet.message}</p>}
+                    </div>
+                    <div className="grid grid-cols-2 gap-3">
+                      <div className="space-y-1.5">
+                        <Label className="text-sm font-medium text-foreground">Ville</Label>
+                        <Input
+                          placeholder="Paris"
+                          className="bg-card border-border text-foreground placeholder:text-foreground-secondary/60"
+                          {...register('addressCity')}
+                        />
+                        {errors.addressCity && <p className="text-xs text-destructive">{errors.addressCity.message}</p>}
+                      </div>
+                      <div className="space-y-1.5">
+                        <Label className="text-sm font-medium text-foreground">Code postal</Label>
+                        <Input
+                          placeholder="75011"
+                          className="bg-card border-border text-foreground placeholder:text-foreground-secondary/60"
+                          {...register('addressPostalCode')}
+                        />
+                        {errors.addressPostalCode && <p className="text-xs text-destructive">{errors.addressPostalCode.message}</p>}
+                      </div>
+                    </div>
+
+                    {/* Privacy notice */}
+                    <div className="flex items-start gap-2 p-3 bg-amber-900/20 border border-amber-800/40 rounded-xl text-xs text-amber-400">
+                      <span>🔒</span>
+                      <p>Votre adresse exacte ne sera communiquée au vendeur qu&apos;après son acceptation. Seuls la ville et le code postal seront visibles avant.</p>
+                    </div>
+                  </div>
                 </div>
-                <div className="space-y-1.5">
-                  <Label className="text-sm font-medium text-foreground">Ville</Label>
-                  <Input
-                    placeholder="Paris"
-                    className="bg-card border-border text-foreground placeholder:text-foreground-secondary/60"
-                    {...register('city')}
-                  />
-                  {errors.city && <p className="text-xs text-destructive">{errors.city.message}</p>}
-                </div>
+
                 <div className="space-y-1.5">
                   <Label className="text-sm font-medium text-foreground">Volume d&apos;articles</Label>
                   <Controller
@@ -240,7 +352,7 @@ export default function NewMissionPage() {
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent className="bg-card border-border">
-                          {VOLUMES.map((v) => (
+                          {dynamicVolumes.map((v) => (
                             <SelectItem key={v.value} value={v.value} className="text-foreground">
                               {v.label} — {v.rate}€/h
                             </SelectItem>
@@ -269,7 +381,7 @@ export default function NewMissionPage() {
             <div>
               <h2 className="text-lg font-semibold text-foreground mb-4">Options</h2>
               <div className="space-y-2">
-                {OPTIONS_CATALOG.map((opt) => {
+                {dynamicOptions.map((opt) => {
                   const checked = selectedOptions.includes(opt.key);
                   return (
                     <label
@@ -307,6 +419,52 @@ export default function NewMissionPage() {
               </div>
             </div>
 
+            {/* Code promo */}
+            <div className="bg-card border border-border rounded-xl p-4 space-y-3">
+              <h3 className="font-semibold text-foreground flex items-center gap-2">
+                <Tag className="h-4 w-4 text-primary" />
+                Code promo
+              </h3>
+              {promoResult ? (
+                <div className="flex items-center justify-between bg-success/10 border border-success/30 rounded-lg px-3 py-2">
+                  <div className="flex items-center gap-2">
+                    <CheckCircle className="h-4 w-4 text-success" />
+                    <span className="text-sm font-semibold text-foreground font-mono">{promoCode.toUpperCase()}</span>
+                    <span className="text-sm text-success">
+                      -{formatPrice(promoResult.discountAmount)}
+                    </span>
+                  </div>
+                  <button type="button" onClick={handleRemovePromo} className="text-foreground-secondary hover:text-destructive transition-colors">
+                    <XCircle className="h-4 w-4" />
+                  </button>
+                </div>
+              ) : (
+                <div className="flex gap-2">
+                  <Input
+                    placeholder="ESSAI2024"
+                    value={promoCode}
+                    onChange={(e) => { setPromoCode(e.target.value.toUpperCase()); setPromoError(''); }}
+                    className="font-mono uppercase bg-background border-border"
+                    onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); void handleApplyPromo(); } }}
+                  />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={handleApplyPromo}
+                    disabled={promoLoading || !promoCode.trim()}
+                    className="shrink-0"
+                  >
+                    {promoLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Appliquer'}
+                  </Button>
+                </div>
+              )}
+              {promoError && (
+                <p className="text-xs text-destructive flex items-center gap-1">
+                  <XCircle className="h-3.5 w-3.5" /> {promoError}
+                </p>
+              )}
+            </div>
+
             {/* Price summary */}
             <div className="bg-card border border-border rounded-xl p-5">
               <h3 className="font-semibold text-foreground mb-4">Récapitulatif du prix</h3>
@@ -314,6 +472,7 @@ export default function NewMissionPage() {
                 basePrice={basePrice}
                 optionsPrice={optionsPrice}
                 discount={0}
+                promoDiscount={promoDiscount}
                 totalPrice={totalPrice}
               />
             </div>

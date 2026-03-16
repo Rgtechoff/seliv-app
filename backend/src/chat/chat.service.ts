@@ -3,6 +3,8 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { ChatMessage } from './entities/chat-message.entity';
 import { ChatPreset } from './entities/chat-preset.entity';
+import { Mission } from '../missions/entities/mission.entity';
+import { MissionInterest } from './entities/mission-interest.entity';
 
 // Modération patterns: bloque numéros FR, emails, réseaux sociaux
 const BLOCKED_PATTERNS = [
@@ -31,6 +33,10 @@ export class ChatService {
     private readonly messageRepo: Repository<ChatMessage>,
     @InjectRepository(ChatPreset)
     private readonly presetRepo: Repository<ChatPreset>,
+    @InjectRepository(Mission)
+    private readonly missionRepo: Repository<Mission>,
+    @InjectRepository(MissionInterest)
+    private readonly interestRepo: Repository<MissionInterest>,
   ) {}
 
   async sendMessage(
@@ -87,6 +93,142 @@ export class ChatService {
 
   async deleteMessage(messageId: string): Promise<void> {
     await this.messageRepo.delete(messageId);
+  }
+
+  async getMission(missionId: string): Promise<Mission | null> {
+    return this.missionRepo.findOne({ where: { id: missionId } });
+  }
+
+  async getMissionById(missionId: string): Promise<Mission | null> {
+    return this.missionRepo.findOne({ where: { id: missionId } });
+  }
+
+  async registerInterest(missionId: string, vendeurId: string): Promise<void> {
+    const exists = await this.interestRepo.findOne({ where: { missionId, vendeurId } });
+    if (!exists) {
+      await this.interestRepo.save(this.interestRepo.create({ missionId, vendeurId }));
+    }
+  }
+
+  async getInterestedVendeurs(missionId: string): Promise<MissionInterest[]> {
+    return this.interestRepo.find({
+      where: { missionId },
+      relations: ['vendeur'],
+    });
+  }
+
+  async createSystemMessage(missionId: string, content: string): Promise<ChatMessage> {
+    const msg = this.messageRepo.create({
+      missionId,
+      senderId: missionId, // pseudo sender = missionId pour les system messages
+      content,
+      isPreset: false,
+      isFlagged: false,
+      isSystem: true,
+      chatPhase: 'post_acceptance',
+      moderationAction: 'allow',
+      moderationScore: 0,
+    });
+    return this.messageRepo.save(msg);
+  }
+
+  async createMessage(data: {
+    missionId: string;
+    senderId: string;
+    content: string;
+    isPreset: boolean;
+    chatPhase: 'pre_acceptance' | 'post_acceptance';
+    moderationAction: string;
+    moderationScore: number;
+  }): Promise<ChatMessage> {
+    const isFlaggedMsg = data.moderationAction === 'flag';
+    const isBlocked = data.moderationAction === 'block';
+
+    if (isBlocked) {
+      // Ne pas sauvegarder les messages bloqués (uniquement loggés dans moderation_logs)
+      // Retourner un objet temporaire sans sauvegarde
+      return {
+        id: 'blocked',
+        missionId: data.missionId,
+        senderId: data.senderId,
+        content: data.content,
+        isPreset: data.isPreset,
+        isFlagged: true,
+        isSystem: false,
+        chatPhase: data.chatPhase,
+        moderationAction: 'block',
+        moderationScore: data.moderationScore,
+        createdAt: new Date(),
+      } as unknown as ChatMessage;
+    }
+
+    const message = this.messageRepo.create({
+      missionId: data.missionId,
+      senderId: data.senderId,
+      content: data.content,
+      isPreset: data.isPreset,
+      isFlagged: isFlaggedMsg,
+      isSystem: false,
+      chatPhase: data.chatPhase,
+      moderationAction: data.moderationAction,
+      moderationScore: data.moderationScore,
+    });
+    return this.messageRepo.save(message);
+  }
+
+  async getConversations(userId: string) {
+    const missions = await this.missionRepo.find({
+      where: [{ clientId: userId }, { vendeurId: userId }],
+      relations: ['client', 'vendeur'],
+      order: { updatedAt: 'DESC' },
+    });
+
+    const results = await Promise.all(
+      missions.map(async (mission) => {
+        const lastMessage = await this.messageRepo.findOne({
+          where: { missionId: mission.id, isFlagged: false },
+          order: { createdAt: 'DESC' },
+        });
+
+        const otherParticipant =
+          mission.clientId === userId ? mission.vendeur : mission.client;
+
+        return {
+          missionId: mission.id,
+          category: mission.category,
+          date: mission.date,
+          status: mission.status,
+          city: mission.city,
+          lastMessage: lastMessage
+            ? {
+                content: lastMessage.content,
+                senderId: lastMessage.senderId,
+                createdAt: lastMessage.createdAt,
+                isPreset: lastMessage.isPreset,
+              }
+            : null,
+          otherParticipant: otherParticipant
+            ? {
+                id: otherParticipant.id,
+                firstName: otherParticipant.firstName,
+                lastName: otherParticipant.lastName,
+                avatarUrl: otherParticipant.avatarUrl,
+              }
+            : null,
+        };
+      }),
+    );
+
+    // Sort by last message date (most recent first), then by mission date
+    return results.sort((a, b) => {
+      const aDate = a.lastMessage?.createdAt
+        ? new Date(a.lastMessage.createdAt).getTime()
+        : 0;
+      const bDate = b.lastMessage?.createdAt
+        ? new Date(b.lastMessage.createdAt).getTime()
+        : 0;
+      return bDate - aDate;
+    });
   }
 
   async seedPresets(): Promise<void> {

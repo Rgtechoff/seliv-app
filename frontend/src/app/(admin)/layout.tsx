@@ -15,6 +15,8 @@ import {
   Menu,
   X,
   Bell,
+  Tag,
+  Ticket,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '@/lib/hooks/use-auth';
@@ -30,6 +32,8 @@ const NAV = [
   { href: '/admin/abonnements', label: 'Abonnements', icon: BadgeCheck },
   { href: '/admin/chat-moderation', label: 'Modération Chat', icon: MessageSquare },
   { href: '/admin/facturation', label: 'Facturation', icon: CreditCard },
+  { href: '/admin/tarifs', label: 'Tarifs', icon: Tag },
+  { href: '/admin/promo-codes', label: 'Codes Promo', icon: Ticket },
 ];
 
 function AdminSidebarContent({

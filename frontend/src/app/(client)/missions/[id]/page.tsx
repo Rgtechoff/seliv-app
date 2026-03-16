@@ -77,7 +77,7 @@ export default function ClientMissionDetailPage() {
           </div>
           <div className="flex items-center gap-2 col-span-2">
             <MapPin className="h-4 w-4 text-muted-foreground" />
-            <span>{mission.address}, {mission.city}</span>
+            <span>{mission.address_display ?? `${mission.address}, ${mission.city}`}</span>
           </div>
           <div className="flex items-center gap-2">
             <Package className="h-4 w-4 text-muted-foreground" />

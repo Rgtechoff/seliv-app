@@ -52,6 +52,15 @@ export class Mission {
   @Column()
   address: string;
 
+  @Column({ name: 'address_street', type: 'varchar', nullable: true })
+  addressStreet: string | null;
+
+  @Column({ name: 'address_city', type: 'varchar', nullable: true })
+  addressCity: string | null;
+
+  @Column({ name: 'address_postal_code', type: 'varchar', nullable: true })
+  addressPostalCode: string | null;
+
   @Column()
   city: string;
 
@@ -87,6 +96,12 @@ export class Mission {
 
   @Column({ name: 'refund_stripe_id', type: 'varchar', nullable: true })
   refundStripeId: string | null;
+
+  @Column({ name: 'promo_code', type: 'varchar', nullable: true })
+  promoCode: string | null;
+
+  @Column({ name: 'promo_discount', type: 'int', default: 0 })
+  promoDiscount: number;
 
   @Column({ name: 'cancelled_at', type: 'timestamp', nullable: true })
   cancelledAt: Date | null;

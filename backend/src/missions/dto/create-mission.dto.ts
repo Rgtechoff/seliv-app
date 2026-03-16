@@ -44,6 +44,18 @@ export class CreateMissionDto {
   @MinLength(5)
   address: string;
 
+  @IsOptional()
+  @IsString()
+  addressStreet?: string;
+
+  @IsOptional()
+  @IsString()
+  addressCity?: string;
+
+  @IsOptional()
+  @IsString()
+  addressPostalCode?: string;
+
   @IsString()
   @MinLength(2)
   city: string;
@@ -58,4 +70,8 @@ export class CreateMissionDto {
   @ValidateNested({ each: true })
   @Type(() => MissionOptionDto)
   options: MissionOptionDto[];
+
+  @IsOptional()
+  @IsString()
+  promoCode?: string;
 }

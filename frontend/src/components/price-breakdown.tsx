@@ -7,6 +7,7 @@ interface PriceBreakdownProps {
   discount: number;
   totalPrice: number;
   className?: string;
+  promoDiscount?: number;
 }
 
 export function PriceBreakdown({
@@ -15,6 +16,7 @@ export function PriceBreakdown({
   discount,
   totalPrice,
   className,
+  promoDiscount = 0,
 }: PriceBreakdownProps) {
   return (
     <div className={cn('space-y-1 text-sm', className)}>
@@ -32,6 +34,12 @@ export function PriceBreakdown({
         <div className="flex justify-between text-green-600">
           <span>Remise abonnement</span>
           <span>-{formatPrice(discount)}</span>
+        </div>
+      )}
+      {promoDiscount > 0 && (
+        <div className="flex justify-between text-green-600">
+          <span>Code promo</span>
+          <span>-{formatPrice(promoDiscount)}</span>
         </div>
       )}
       <div className="flex justify-between border-t pt-1 font-semibold">

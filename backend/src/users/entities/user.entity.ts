@@ -104,6 +104,12 @@ export class User {
   @Column({ name: 'is_suspended', default: false })
   isSuspended: boolean;
 
+  @Column({ name: 'password_reset_token', type: 'varchar', nullable: true })
+  passwordResetToken: string | null;
+
+  @Column({ name: 'password_reset_expires', type: 'timestamp', nullable: true })
+  passwordResetExpires: Date | null;
+
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;
 

@@ -2,22 +2,22 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { LayoutDashboard, PlusCircle, History, CreditCard, ListChecks, CalendarDays, User } from 'lucide-react';
+import { LayoutDashboard, PlusCircle, History, ListChecks, CalendarDays, MessageSquare } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
 
 const CLIENT_NAV = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { href: '/missions/new', label: 'Mission', icon: PlusCircle },
+  { href: '/messages', label: 'Messages', icon: MessageSquare },
   { href: '/history', label: 'Historique', icon: History },
-  { href: '/subscription', label: 'Abonnement', icon: CreditCard },
 ];
 
 const VENDEUR_NAV = [
   { href: '/vendeur/dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { href: '/vendeur/missions', label: 'Missions', icon: ListChecks },
+  { href: '/vendeur/messages', label: 'Messages', icon: MessageSquare },
   { href: '/vendeur/disponibilites', label: 'Planning', icon: CalendarDays },
-  { href: '/vendeur/profil', label: 'Profil', icon: User },
 ];
 
 interface AppBottomNavProps {
